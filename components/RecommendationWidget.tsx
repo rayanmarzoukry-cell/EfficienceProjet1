@@ -1,19 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sparkles } from "lucide-react"
+import React from "react"
+import { BrainCircuit } from "lucide-react"
+import { Card } from "@/components/ui/card"
 
-export default function RecommendationWidget() {
+export default function AIInsightsPanel({ analysis }: { analysis: string }) {
   return (
-    <Card className="rounded-[2rem] border-none shadow-sm bg-white">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-black flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-orange-500" /> Optimisation IA
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-xs text-slate-500 italic">
-          Analyse des données en cours... Augmentez les traitements esthétiques pour atteindre l'objectif de 50k€.
-        </p>
-      </CardContent>
+    <Card className="p-8 rounded-[2.5rem] border-none shadow-sm bg-white text-left">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-violet-50 text-violet-600 rounded-lg">
+          <BrainCircuit size={20} />
+        </div>
+        <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest italic">Analyse Prédictive</h3>
+      </div>
+      <p className="text-slate-600 text-xs leading-relaxed font-medium">
+        {analysis}
+      </p>
     </Card>
   )
 }
