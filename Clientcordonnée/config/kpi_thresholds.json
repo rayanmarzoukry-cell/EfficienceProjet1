@@ -1,0 +1,44 @@
+
+
+{
+  "general_settings": {
+    "jours_ouvres_moyen_mensuel": 20
+  },
+
+  "analyse_activite_ca": {
+    "ChiffreAffairesMensuel": {
+      "ideal": 40000,
+      "moyen": 25000,
+      "alerte": 15000,
+      "unit": "€"
+    },
+    "ProductionHoraireReelle": {
+      "ideal_min": 300,
+      "ideal_max": 400,
+      "standard": 180,
+      "unit": "€/heure"
+    },
+    "PanierMoyenPatient": {
+      "ideal": 800,
+      "standard": 400,
+      "unit": "€/patient"
+    }
+  },
+
+  "analyse_devis_vente": {
+    "NbDevisProposesParJour": {
+      "ideal": 2
+    },
+    "MontantMoyenDevisPropose": {
+      "ideal_min": 800,
+      "ideal_max": 1200
+    },
+    "TauxAcceptationNb": {
+      "ideal_min": 0.40,
+      "ideal_max": 0.65
+    },
+    "TauxAcceptationMontant_EcartNb": {
+      "ecart_max": 0.20
+    }
+  }
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant Dentaire - Mode Expert Llama 3.2</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .chat-card { width: 100%; max-width: 800px; background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); padding: 30px; }
+        .header { background: #004a99; color: white; padding: 15px; text-align: center; border-radius: 8px; font-weight: bold; margin-bottom: 20px; font-size: 1.2em; }
+        textarea { width: 100%; height: 110px; border: 1px solid #ddd; border-radius: 8px; padding: 15px; box-sizing: border-box; font-size: 16px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        button { flex: 1; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; font-size: 15px; }
+        .btn-ask { background-color: #004a99; }
+        .btn-pdf { background-color: #1e7e34; display: none; }
+        .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #004a99; border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; margin: 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #response-area { margin-top: 25px; padding: 20px; background: #fff; border-left: 6px solid #004a99; border-radius: 4px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+<div class="chat-card">
+    <div class="header">Assistant Chirurgie Dentaire (Modèle Llama 3.2)</div>
+    <textarea id="doctorQuestion" placeholder="Posez une question clinique précise..."></textarea>
+    
+    <div class="btn-group">
+        <button id="askBtn" class="btn-ask" onclick="askAI()">Interroger l'Expert</button>
+        <button id="pdfBtn" class="btn-pdf" onclick="exportToPDF()">Exporter PDF</button>
+    </div>
+
+    <div id="loader" class="loader"></div>
+    <div id="response-area">Le protocole précis s'affichera ici...</div>
+</div>
+
+<script>
+    async function askAI() {
+        const question = document.getElementById('doctorQuestion').value;
+        const responseDiv = document.getElementById('response-area');
+        const loader = document.getElementById('loader');
+        
+        if (!question) return alert("Veuillez saisir une question.");
+
+        responseDiv.innerHTML = "<em>L'IA analyse votre demande clinique...</em>";
+        loader.style.display = "block";
+        document.getElementById('pdfBtn').style.display = "none";
+
+        try {
+            const result = await fetch('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: "llama3.2", // Modèle haute précision de 2 Go
+                    prompt: "Tu es un expert en chirurgie dentaire. Réponds de manière technique et structurée. Respecte les protocoles d'hygiène de la HAS. Question : " + question,
+                    stream: false
+                })
+            });
+
+            const data = await result.json();
+            responseDiv.innerHTML = marked.parse(data.response);
+            document.getElementById('pdfBtn').style.display = "block";
+
+        } catch (err) {
+            responseDiv.innerHTML = "<span style='color:red;'>Erreur : Vérifiez qu'Ollama est lancé.</span>";
+        } finally {
+            loader.style.display = "none";
+        }
+    }
+
+    function exportToPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text(document.getElementById('response-area').innerText, 10, 20, { maxWidth: 180 });
+        doc.save("Protocole_Expert_Dentaire.pdf");
+    }
+</script>
+
+</body>
+</html>

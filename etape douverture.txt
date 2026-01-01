@@ -1,0 +1,31 @@
+@echo off
+title Assistant Efficience Dentaire - Maintenance et Lancement
+echo ===================================================
+echo   Lancement de l'ecosysteme Efficience Dentaire...
+echo ===================================================
+
+:: 1. Lancer l'application Ollama
+echo [1/4] Verification de Ollama...
+start "" "ollama app"
+
+:: 2. Ouvrir VS Code sur le projet
+echo [2/4] Ouverture de VS Code...
+code "C:\efficience-dentaire-app"
+
+:: 3. Lancer le Serveur Flask (Le Pont IA)
+echo [3/4] Lancement du Serveur Flask...
+start cmd /k "cd /d C:\Users\MSI\Downloads\chatgpt-api-youtube-main\chatgpt-api-youtube-main && python app.py"
+
+:: 4. Lancer le Frontend Next.js (Correction de l'erreur NPM)
+echo [4/4] Lancement du site (npm run dev)...
+:: On utilise "call npm" pour s'assurer que Windows trouve le bon executable
+start cmd /k "cd /d C:\efficience-dentaire-app && call npm run dev"
+
+:: 5. OUVERTURE AUTOMATIQUE DU NAVIGATEUR
+echo Attente du demarrage du site...
+timeout /t 12
+start http://localhost:3000
+
+echo ===================================================
+echo TOUT EST EN COURS DE LANCEMENT !
+echo ===================================================
