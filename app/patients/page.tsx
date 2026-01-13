@@ -76,8 +76,8 @@ export default function PatientsPage() {
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               <tr><td colSpan={4} className="p-10 text-center text-slate-400">Chargement des données...</td></tr>
-            ) : filteredPatients.map((patient) => (
-              <tr key={patient.id} className="hover:bg-slate-50 transition-colors group">
+            ) : filteredPatients.map((patient, index) => (
+              <tr key={`${patient.id}-${index}`} className="hover:bg-slate-50 transition-colors group">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold uppercase">

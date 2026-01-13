@@ -26,8 +26,22 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null)
 
+// Données par défaut si le serveur Flask est hors ligne
+const defaultPatients: Patient[] = [
+  { id: 1, name: "Jean Dupont", dateRDV: "2026-01-15", time: "09:00", type: "CONTRÔLE", status: "PRESENT" },
+  { id: 2, name: "Marie Martin", dateRDV: "2026-01-15", time: "09:30", type: "DÉTARTRAGE", status: "PRESENT" },
+  { id: 3, name: "Pierre Bernard", dateRDV: "2026-01-15", time: "10:00", type: "DÉTARTRAGE", status: "ATTENTE" },
+  { id: 4, name: "Sophie Lefevre", dateRDV: "2026-01-15", time: "10:30", type: "DÉVITALISATION", status: "PRESENT" },
+  { id: 5, name: "Luc Durand", dateRDV: "2026-01-15", time: "11:00", type: "CONTRÔLE", status: "ABSENT" },
+  { id: 6, name: "Anne Dubois", dateRDV: "2026-01-16", time: "14:00", type: "IMPLANT", status: "PRESENT" },
+  { id: 7, name: "Marc Garnier", dateRDV: "2026-01-16", time: "14:30", type: "DÉTARTRAGE", status: "PRESENT" },
+  { id: 8, name: "Isabelle Moreau", dateRDV: "2026-01-16", time: "15:00", type: "DÉVITALISATION", status: "ATTENTE" },
+  { id: 9, name: "Nicolas Fournier", dateRDV: "2026-01-16", time: "15:30", type: "CONTRÔLE", status: "PRESENT" },
+  { id: 10, name: "Valérie Simon", dateRDV: "2026-01-16", time: "16:00", type: "DÉTARTRAGE", status: "PRESENT" },
+]
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [patients, setPatients] = useState<Patient[]>([])
+  const [patients, setPatients] = useState<Patient[]>(defaultPatients)
   const [loading, setLoading] = useState(true)
   const [isServerOnline, setIsServerOnline] = useState(false)
 
@@ -40,12 +54,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         cache: 'no-store', // Force le rafraîchissement sans cache
       })
       const data = await response.json()
-      if (data.success) {
-        setPatients(data.patients)
+      if (data.success && Array.isArray(data.patients)) {
+        // Déduplique les patients par ID pour éviter les doublons
+        const uniquePatients = Array.from(
+          new Map(data.patients.map((p: Patient) => [p.id, p])).values()
+        )
+        setPatients(uniquePatients)
         setIsServerOnline(true)
       }
     } catch (error) {
-      console.warn("☁️ Serveur Flask hors ligne sur le port 5001")
+      console.warn("☁️ Serveur Flask hors ligne sur le port 5001 - Utilisation des données par défaut")
+      setPatients(defaultPatients)
       setIsServerOnline(false)
     } finally {
       setLoading(false)
@@ -62,10 +81,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // --- ACTION : AJOUTER (POST) ---
   const addPatient = async (patientData: any) => {
     try {
+      // Génère un ID unique basé sur le timestamp
+      const newId = Date.now().toString()
+      const patientWithId = { ...patientData, id: newId }
+      
       const res = await fetch(`${API_URL}/add-patient`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patientData)
+        body: JSON.stringify(patientWithId)
       })
       if (res.ok) await refreshData()
     } catch (err) {

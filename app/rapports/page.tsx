@@ -1,11 +1,12 @@
 "use client"
 
 import React, { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, Download, Mail, RotateCcw, Eye, Trash2 } from "lucide-react"
+import { Search, Download, Mail, RotateCcw, Eye, Trash2, Zap } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { AIReportGenerator } from "@/components/ai-report-generator"
 
 // Données mock rapports
 const rapportsData = [
@@ -67,14 +69,47 @@ const statsRapports = [
 ]
 
 export default function RapportsPage() {
+  const searchParams = useSearchParams()
+  const cabinetFilter = searchParams.get("cabinet")
+  
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedRapport, setSelectedRapport] = useState<typeof rapportsData[0] | null>(null)
+  const [generatingId, setGeneratingId] = useState<number | null>(null)
+  const [generatedReports, setGeneratedReports] = useState<number[]>([])
 
-  const filteredRapports = rapportsData.filter(
+  let filteredRapports = rapportsData.filter(
     (rapport) =>
       rapport.cabinet.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rapport.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  if (cabinetFilter) {
+    filteredRapports = filteredRapports.filter(
+      (rapport) => rapport.id === parseInt(cabinetFilter)
+    )
+  }
+
+  const handleGenerateReport = async (id: number) => {
+    setGeneratingId(id)
+    // Simulation d'une génération de rapport (2 secondes)
+    setTimeout(() => {
+      setGeneratedReports([...generatedReports, id])
+      setGeneratingId(null)
+      alert(`✅ Rapport généré avec succès pour le cabinet ${id}`)
+    }, 2000)
+  }
+
+  const handleDownloadReport = (cabinetName: string) => {
+    alert(`📥 Téléchargement du rapport pour ${cabinetName}...`)
+  }
+
+  const handleSendReport = (email: string, cabinetName: string) => {
+    alert(`📧 Envoi du rapport pour ${cabinetName} à ${email}...`)
+  }
+
+  const handleResendReport = (email: string, cabinetName: string) => {
+    alert(`🔄 Renvoi du rapport pour ${cabinetName} à ${email}...`)
+  }
 
   const getStatutColor = (statut: string) => {
     switch (statut) {
@@ -199,23 +234,39 @@ export default function RapportsPage() {
                             size="sm"
                             variant="ghost"
                             className="text-slate-400 hover:text-green-400"
+                            onClick={() => handleDownloadReport(rapport.cabinet)}
                           >
                             <Download className="w-4 h-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-slate-400 hover:text-purple-400"
-                          >
-                            <Mail className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-slate-400 hover:text-yellow-400"
-                          >
-                            <RotateCcw className="w-4 h-4" />
-                          </Button>
+                          {rapport.statut === "Généré" ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-slate-400 hover:text-purple-400"
+                              onClick={() => handleSendReport(rapport.email, rapport.cabinet)}
+                            >
+                              <Mail className="w-4 h-4" />
+                            </Button>
+                          ) : rapport.statut === "Envoyé" ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-slate-400 hover:text-yellow-400"
+                              onClick={() => handleResendReport(rapport.email, rapport.cabinet)}
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-slate-400 hover:text-blue-400"
+                              onClick={() => handleGenerateReport(rapport.id)}
+                              disabled={generatingId === rapport.id}
+                            >
+                              {generatingId === rapport.id ? "⏳" : "⚙️"}
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -227,11 +278,51 @@ export default function RapportsPage() {
         </Card>
 
         {/* Boutons d'action */}
-        <div className="flex gap-4 mt-8 justify-center">
-          <Button className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full">
+        <div className="flex gap-4 mt-8 justify-center flex-wrap">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full"
+            onClick={() => {
+              const nonGenerated = rapportsData.filter(r => r.statut === "Non généré")[0]
+              if (nonGenerated) {
+                handleGenerateReport(nonGenerated.id)
+              } else {
+                alert("Tous les rapports sont déjà générés!")
+              }
+            }}
+          >
             Générer rapport →
           </Button>
-          <Button variant="outline" className="border-white/10 px-8 py-3 rounded-full">
+
+          {/* Bouton IA - Génération intelligente */}
+          <AIReportGenerator
+            data={{
+              cabinetName: rapportsData[0]?.cabinet || "Cabinet",
+              cabinetData: {
+                id: "cabinet-1",
+                nom: rapportsData[0]?.cabinet || "Cabinet",
+                caActuel: 45000,
+                caObjectif: 50000,
+                nouveauxPatients: 12,
+                absences: 2,
+                devisEnvoyes: 15,
+                devisConvertis: 9,
+                traitements: [
+                  { nom: "Détartrage", nombre: 25 },
+                  { nom: "Détartrage", nombre: 18 },
+                  { nom: "Dévitalisation", nombre: 8 },
+                  { nom: "Implant", nombre: 3 },
+                ],
+                periodicite: "mois",
+              },
+              period: "Décembre 2025",
+            }}
+          />
+
+          <Button 
+            variant="outline" 
+            className="border-white/10 px-8 py-3 rounded-full"
+            onClick={() => alert("📊 Historique des rapports générés...")}
+          >
             Historique →
           </Button>
         </div>

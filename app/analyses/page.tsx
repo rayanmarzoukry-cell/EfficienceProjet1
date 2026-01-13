@@ -5,7 +5,8 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, Zap, RefreshCw } from "lucide-react"
+import { useAI } from "@/hooks/use-ai"
 
 // Données mock pour les analyses globales
 const dataCAMoyenParCabinet = [
@@ -68,7 +69,40 @@ const scoringData = [
 ]
 
 export default function AnalysesPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState("month")
+  const months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"]
+  const years = [2023, 2024, 2025, 2026]
+  
+  const [selectedMonth, setSelectedMonth] = useState("Décembre")
+  const [selectedYear, setSelectedYear] = useState(2025)
+  const [showMonthDropdown, setShowMonthDropdown] = useState(false)
+  const [showYearDropdown, setShowYearDropdown] = useState(false)
+  const [analysis, setAnalysis] = useState<string | null>(null)
+  
+  const { loading: aiLoading, error: aiError, analyzeCabinet } = useAI()
+
+  const handleAIAnalysis = async () => {
+    const globalCabinetData = {
+      id: "global",
+      nom: "Vue Globale - Tous les Cabinets",
+      caActuel: 285000,
+      caObjectif: 300000,
+      nouveauxPatients: 125,
+      absences: 8,
+      devisEnvoyes: 95,
+      devisConvertis: 57,
+      traitements: [
+        { nom: "Détartrage", nombre: 250 },
+        { nom: "Dévitalisation", nombre: 85 },
+        { nom: "Implant", nombre: 35 },
+      ],
+      periodicite: "mois",
+    }
+
+    const result = await analyzeCabinet(globalCabinetData)
+    if (result) {
+      setAnalysis(result)
+    }
+  }
 
   return (
     <div className="p-8 bg-[#030712] min-h-screen">
@@ -76,21 +110,112 @@ export default function AnalysesPage() {
         {/* En-tête */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Analyses Globales</h1>
-          <p className="text-slate-400">Comparatifs des performances des cabinets</p>
+          <p className="text-slate-400">Comparatifs des performances des cabinets - {selectedMonth} {selectedYear}</p>
         </div>
 
         {/* Filtres */}
-        <div className="flex gap-4 mb-8">
-          <div className="flex items-center gap-2">
+        <div className="flex gap-4 mb-8 flex-wrap items-center">
+          <div className="flex items-center gap-2 relative">
             <span className="text-slate-400 text-sm">Période :</span>
-            <button className="px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 text-sm flex items-center gap-2">
-              Sélectionner mois <ChevronDown className="w-4 h-4" />
+            <button 
+              onClick={() => setShowMonthDropdown(!showMonthDropdown)}
+              className="px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 text-sm flex items-center gap-2"
+            >
+              {selectedMonth} <ChevronDown className="w-4 h-4" />
             </button>
+            {showMonthDropdown && (
+              <div className="absolute top-12 left-0 bg-[#090E1A] border border-white/10 rounded-lg w-40 z-10">
+                {months.map((month) => (
+                  <button
+                    key={month}
+                    onClick={() => {
+                      setSelectedMonth(month)
+                      setShowMonthDropdown(false)
+                    }}
+                    className="w-full text-left px-4 py-2 text-white hover:bg-white/10 border-b border-white/5 last:border-b-0"
+                  >
+                    {month}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <button className="px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 text-sm flex items-center gap-2">
-            Sélectionner année <ChevronDown className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2 relative">
+            <button 
+              onClick={() => setShowYearDropdown(!showYearDropdown)}
+              className="px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 text-sm flex items-center gap-2"
+            >
+              {selectedYear} <ChevronDown className="w-4 h-4" />
+            </button>
+            {showYearDropdown && (
+              <div className="absolute top-12 left-0 bg-[#090E1A] border border-white/10 rounded-lg w-24 z-10">
+                {years.map((year) => (
+                  <button
+                    key={year}
+                    onClick={() => {
+                      setSelectedYear(year)
+                      setShowYearDropdown(false)
+                    }}
+                    className="w-full text-left px-4 py-2 text-white hover:bg-white/10 border-b border-white/5 last:border-b-0"
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Bouton IA */}
+          <Button
+            onClick={handleAIAnalysis}
+            disabled={aiLoading}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white gap-2"
+          >
+            {aiLoading ? (
+              <>
+                <RefreshCw size={18} className="animate-spin" />
+                Analyse en cours...
+              </>
+            ) : (
+              <>
+                <Zap size={18} />
+                Analyse IA Globale
+              </>
+            )}
+          </Button>
         </div>
+
+        {/* Affichage analyse IA */}
+        {analysis && (
+          <Card className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-purple-500/30 mb-8">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-bold text-white mb-4">🤖 Analyse IA Globale</h3>
+              <div className="text-white/90 space-y-3 text-sm">
+                {analysis.split('\n').map((line, idx) => (
+                  <p key={idx} className={line.startsWith('**') ? 'font-semibold' : ''}>
+                    {line.replace(/\*\*/g, '')}
+                  </p>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAnalysis(null)}
+                className="mt-4 border-purple-500/50"
+              >
+                Fermer
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {aiError && (
+          <Card className="bg-red-900/20 border-red-500/30 mb-8">
+            <CardContent className="p-4">
+              <p className="text-red-400">{aiError}</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Cartes de résumé */}
         <div className="grid grid-cols-5 gap-4 mb-8">

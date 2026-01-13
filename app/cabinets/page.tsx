@@ -197,9 +197,11 @@ export default function CabinetsPage() {
                         Voir détails
                       </Button>
                     </Link>
-                    <Button variant="outline" className="border-white/10 text-sm" size="sm">
-                      Rapport
-                    </Button>
+                    <Link href={`/rapports?cabinet=${cabinet.id}`} className="flex-1">
+                      <Button className="w-full bg-purple-600 hover:bg-purple-700 text-sm" size="sm">
+                        📄 Rapport
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </CardContent>
@@ -257,11 +259,18 @@ export default function CabinetsPage() {
                         </Badge>
                       </td>
                       <td className="py-4 px-4">
-                        <Link href={`/cabinet/${cabinet.id}`}>
-                          <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </Link>
+                        <div className="flex gap-2">
+                          <Link href={`/cabinet/${cabinet.id}`}>
+                            <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                          <Link href={`/rapports?cabinet=${cabinet.id}`}>
+                            <Button size="sm" variant="ghost" className="text-purple-400 hover:text-purple-300">
+                              📄
+                            </Button>
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}
