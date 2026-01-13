@@ -1,10 +1,13 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
-import { Users, TrendingUp, Calendar, ArrowUpRight, BrainCircuit, FileDown, RefreshCw } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Sidebar } from "@/components/sidebar"
+import { Users, TrendingUp, Calendar, ArrowUpRight, BrainCircuit, FileDown, RefreshCw, BarChart3, FileText, Eye } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 import { useApp } from "@/context/AppContext"
+import Link from "next/link"
 
 import PatientFlowChart from "@/components/OccupationChart"
 import RevenuePerformanceChart from "@/components/ProductionChart"

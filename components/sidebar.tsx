@@ -2,15 +2,17 @@
 import React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Stethoscope, Users, ShieldCheck, Settings, Activity } from "lucide-react"
+import { LayoutDashboard, BarChart3, PieChart, Users, FileText, MessageSquare, Settings, Activity } from "lucide-react"
 
 export function Sidebar() {
   const pathname = usePathname()
   const menuItems = [
-    { icon: LayoutDashboard, label: "DASHBOARD", href: "/dashboard" },
-    { icon: Stethoscope, label: "CABINET", href: "/cabinet" },
+    { icon: LayoutDashboard, label: "Dashboard général", href: "/dashboard" },
+    { icon: BarChart3, label: "Analyses", href: "/analyses" },
+    { icon: PieChart, label: "Gestion clients", href: "/cabinets" },
+    { icon: FileText, label: "Rapports", href: "/rapports" },
+    { icon: MessageSquare, label: "Consultations", href: "/consultations" },
     { icon: Users, label: "PATIENTS", href: "/patients" },
-    { icon: ShieldCheck, label: "SÉCURITÉ", href: "/security" },
     { icon: Settings, label: "RÉGLAGES", href: "/settings" },
   ]
 
