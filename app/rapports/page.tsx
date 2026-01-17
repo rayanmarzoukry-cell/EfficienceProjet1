@@ -125,27 +125,27 @@ export default function RapportsPage() {
   }
 
   return (
-    <div className="p-8 bg-[#030712] min-h-screen">
+    <div className="p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* En-tête */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Rapports</h1>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Rapports</h1>
         </div>
 
         {/* Vues rapides */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           {statsRapports.map((stat) => (
-            <Card key={stat.label} className="bg-[#090E1A] border-white/10 cursor-pointer hover:border-white/20">
+            <Card key={stat.label} className="bg-white border-slate-200 cursor-pointer hover:border-slate-300 rounded-2xl shadow-sm">
               <CardContent className="p-6">
-                <p className="text-slate-400 text-sm mb-2">{stat.label}</p>
-                <p className="text-3xl font-bold text-white">{stat.count}</p>
+                <p className="text-slate-600 text-sm mb-2">{stat.label}</p>
+                <p className="text-3xl font-bold text-slate-900">{stat.count}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Filtres et recherche */}
-        <Card className="bg-[#090E1A] border-white/10 mb-8">
+        <Card className="bg-white border-slate-200 mb-8 rounded-2xl shadow-sm">
           <CardContent className="p-6">
             <div className="flex gap-4 items-center">
               <div className="flex-1 relative">
@@ -154,48 +154,48 @@ export default function RapportsPage() {
                   placeholder="Rechercher un cabinet ou un cabinet..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+                  className="pl-10 bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500"
                 />
               </div>
               <Button className="bg-blue-600 hover:bg-blue-700">Filtres</Button>
-              <Button variant="outline" className="border-white/10">Période</Button>
+              <Button variant="outline" className="border-slate-200 text-slate-900">Période</Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Tableau des rapports */}
-        <Card className="bg-[#090E1A] border-white/10">
+        <Card className="bg-white border-slate-200 rounded-2xl shadow-sm">
           <CardHeader>
-            <CardTitle className="text-white">Tableau récapitulatif</CardTitle>
+            <CardTitle className="text-slate-900">Tableau récapitulatif</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left py-4 px-4 text-slate-400 font-semibold">PRATICIEN / CABINET</th>
-                    <th className="text-left py-4 px-4 text-slate-400 font-semibold">PÉRIODE</th>
-                    <th className="text-left py-4 px-4 text-slate-400 font-semibold">STATUT</th>
-                    <th className="text-left py-4 px-4 text-slate-400 font-semibold">GÉNÉRÉ</th>
-                    <th className="text-left py-4 px-4 text-slate-400 font-semibold">ENVOYÉ</th>
-                    <th className="text-left py-4 px-4 text-slate-400 font-semibold">ACTIONS</th>
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left py-4 px-4 text-slate-600 font-semibold">PRATICIEN / CABINET</th>
+                    <th className="text-left py-4 px-4 text-slate-600 font-semibold">PÉRIODE</th>
+                    <th className="text-left py-4 px-4 text-slate-600 font-semibold">STATUT</th>
+                    <th className="text-left py-4 px-4 text-slate-600 font-semibold">GÉNÉRÉ</th>
+                    <th className="text-left py-4 px-4 text-slate-600 font-semibold">ENVOYÉ</th>
+                    <th className="text-left py-4 px-4 text-slate-600 font-semibold">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredRapports.map((rapport) => (
-                    <tr key={rapport.id} className="border-b border-white/5 hover:bg-white/5">
+                    <tr key={rapport.id} className="border-b border-slate-100 hover:bg-slate-50">
                       <td className="py-4 px-4">
                         <div>
-                          <p className="text-white font-medium">{rapport.cabinet}</p>
+                          <p className="text-slate-900 font-medium">{rapport.cabinet}</p>
                           <p className="text-slate-500 text-xs">{rapport.email}</p>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-slate-300">{rapport.periode}</td>
+                      <td className="py-4 px-4 text-slate-600">{rapport.periode}</td>
                       <td className="py-4 px-4">
                         <Badge className={getStatutColor(rapport.statut)}>{rapport.statut}</Badge>
                       </td>
-                      <td className="py-4 px-4 text-slate-300">{rapport.dateGeneration}</td>
-                      <td className="py-4 px-4 text-slate-300">{rapport.dateEnvoi || "-"}</td>
+                      <td className="py-4 px-4 text-slate-600">{rapport.dateGeneration}</td>
+                      <td className="py-4 px-4 text-slate-600">{rapport.dateEnvoi || "-"}</td>
                       <td className="py-4 px-4">
                         <div className="flex gap-2">
                           <Dialog>
@@ -203,18 +203,18 @@ export default function RapportsPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="text-slate-400 hover:text-blue-400"
+                                className="text-slate-600 hover:text-blue-600"
                                 onClick={() => setSelectedRapport(rapport)}
                               >
                                 <Eye className="w-4 h-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="bg-[#090E1A] border-white/10 max-w-4xl max-h-96 overflow-y-auto">
+                            <DialogContent className="bg-white border-slate-200 max-w-4xl max-h-96 overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle className="text-white">Aperçu PDF - {rapport.cabinet}</DialogTitle>
+                                <DialogTitle className="text-slate-900">Aperçu PDF - {rapport.cabinet}</DialogTitle>
                               </DialogHeader>
-                              <div className="bg-white/5 p-6 rounded-lg border border-white/10 text-slate-300 font-mono text-sm">
-                                <div className="text-red-400 font-bold mb-4">CABINET B - RAPPORT AVRIL 2026</div>
+                              <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 text-slate-600 font-mono text-sm">
+                                <div className="text-slate-900 font-bold mb-4">CABINET B - RAPPORT AVRIL 2026</div>
                                 <div className="space-y-2">
                                   <p>Statut : Généré - non envoyé</p>
                                   <p>Généré le : 01/04</p>
@@ -293,7 +293,7 @@ export default function RapportsPage() {
             Générer rapport →
           </Button>
 
-          {/* Bouton IA - Génération intelligente */}
+          {/* Bouton Génération Avancée */}
           <AIReportGenerator
             data={{
               cabinetName: rapportsData[0]?.cabinet || "Cabinet",

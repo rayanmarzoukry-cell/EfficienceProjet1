@@ -1,10 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { AuthService } from "@/lib/auth/jwt"
+import { MongoClient } from "mongodb"
+import { comparePassword, generateToken } from "@/lib/auth-utils"
+
+const MONGODB_URI = process.env.MONGODB_URI || ''
+const DB_NAME = process.env.MONGODB_DB || 'rayan_dev2'
 
 // 🔐 ROUTE DE CONNEXION
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json()
+    const { email, password, role } = await request.json()
 
     // Validation des données
     if (!email || !password) {
@@ -17,44 +21,62 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Format d'email invalide" }, { status: 400 })
     }
 
-    // Tentative d'authentification
-    const authResult = await AuthService.authenticate(email, password)
+    // Connexion MongoDB
+    const client = new MongoClient(MONGODB_URI)
+    await client.connect()
+    const db = client.db(DB_NAME)
 
-    if (!authResult) {
-      return NextResponse.json({ success: false, error: "Email ou mot de passe incorrect" }, { status: 401 })
+    // Chercher l'utilisateur
+    const user = await db.collection('users').findOne({
+      email: email.toLowerCase(),
+    })
+
+    if (!user) {
+      client.close()
+      return NextResponse.json({ 
+        success: false, 
+        error: "Email ou mot de passe incorrect" 
+      }, { status: 401 })
     }
 
-    const { user, accessToken, refreshToken } = authResult
+    // Vérifier le mot de passe
+    const passwordMatch = await comparePassword(password, user.password)
+
+    if (!passwordMatch) {
+      client.close()
+      return NextResponse.json({ 
+        success: false, 
+        error: "Email ou mot de passe incorrect" 
+      }, { status: 401 })
+    }
+
+    // Générer le token
+    const token = generateToken(user._id.toString(), user.role)
 
     // Log de connexion
     console.log(`✅ Connexion réussie: ${user.email} (${user.role})`)
 
-    // Réponse avec tokens et informations utilisateur
+    client.close()
+
+    // Réponse avec token
     const response = NextResponse.json({
       success: true,
       message: "Connexion réussie",
-      data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          nom: user.nom,
-          role: user.role,
-          cabinetId: user.cabinetId,
-          cabinetNom: user.cabinetNom,
-          dernierConnexion: user.dernierConnexion,
-        },
-        accessToken,
-        expiresIn: 900, // 15 minutes
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name || 'Utilisateur',
+        role: user.role,
       },
     })
 
-    // Définir le refresh token dans un cookie sécurisé
-    response.cookies.set("refreshToken", refreshToken, {
+    // Ajouter le token dans un cookie
+    response.cookies.set('auth_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60, // 7 jours
-      path: "/",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60, // 30 jours
     })
 
     return response

@@ -65,3 +65,6 @@ export async function initializeApp() {
   cached.conn = await cached.promise;
   return cached.conn;
 }
+
+// Alias pour compatibilité avec d'autres imports
+export const connectDB = initializeApp;

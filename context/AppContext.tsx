@@ -47,27 +47,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const API_URL = "http://127.0.0.1:5001/api";
 
-  // --- ACTION : LIRE (GET) ---
+  // --- ACTION : LIRE (GET) depuis MongoDB via l'API Next.js ---
   const refreshData = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/get-patients`, {
-        cache: 'no-store', // Force le rafraîchissement sans cache
-      })
-      const data = await response.json()
-      if (data.success && Array.isArray(data.patients)) {
+      // Essayer d'abord l'API MongoDB (Next.js)
+      const response = await fetch('/api/patients', {
+        cache: 'no-store',
+      });
+      const data = await response.json();
+      
+      if (response.ok && Array.isArray(data.patients)) {
         // Déduplique les patients par ID pour éviter les doublons
         const uniquePatients = Array.from(
-          new Map(data.patients.map((p: Patient) => [p.id, p])).values()
-        )
-        setPatients(uniquePatients)
-        setIsServerOnline(true)
+          new Map(data.patients.map((p: any) => [p.id || (p as any)._id, p])).values()
+        ) as Patient[];
+        setPatients(uniquePatients);
+        setIsServerOnline(true);
+        console.log('✅ Données chargées depuis MongoDB');
+      } else {
+        throw new Error('Données invalides de MongoDB');
       }
     } catch (error) {
-      console.warn("☁️ Serveur Flask hors ligne sur le port 5001 - Utilisation des données par défaut")
-      setPatients(defaultPatients)
-      setIsServerOnline(false)
+      console.warn("⚠️ MongoDB hors ligne ou erreur - Utilisation des données par défaut");
+      setPatients(defaultPatients);
+      setIsServerOnline(false);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }, []);
 

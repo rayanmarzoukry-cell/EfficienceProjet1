@@ -105,26 +105,26 @@ export default function AnalysesPage() {
   }
 
   return (
-    <div className="p-8 bg-[#030712] min-h-screen">
+    <div className="p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* En-tête */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Analyses Globales</h1>
-          <p className="text-slate-400">Comparatifs des performances des cabinets - {selectedMonth} {selectedYear}</p>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Analyses Globales</h1>
+          <p className="text-slate-600">Comparatifs des performances des cabinets - {selectedMonth} {selectedYear}</p>
         </div>
 
         {/* Filtres */}
         <div className="flex gap-4 mb-8 flex-wrap items-center">
           <div className="flex items-center gap-2 relative">
-            <span className="text-slate-400 text-sm">Période :</span>
+            <span className="text-slate-600 text-sm font-semibold">Période :</span>
             <button 
               onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-              className="px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 text-sm flex items-center gap-2"
+              className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 hover:bg-slate-50 text-sm flex items-center gap-2 shadow-sm"
             >
               {selectedMonth} <ChevronDown className="w-4 h-4" />
             </button>
             {showMonthDropdown && (
-              <div className="absolute top-12 left-0 bg-[#090E1A] border border-white/10 rounded-lg w-40 z-10">
+              <div className="absolute top-12 left-0 bg-white border border-slate-200 rounded-lg w-40 z-10 shadow-lg">
                 {months.map((month) => (
                   <button
                     key={month}
@@ -132,7 +132,7 @@ export default function AnalysesPage() {
                       setSelectedMonth(month)
                       setShowMonthDropdown(false)
                     }}
-                    className="w-full text-left px-4 py-2 text-white hover:bg-white/10 border-b border-white/5 last:border-b-0"
+                    className="w-full text-left px-4 py-2 text-slate-900 hover:bg-blue-50 border-b border-slate-100 last:border-b-0"
                   >
                     {month}
                   </button>
@@ -143,12 +143,12 @@ export default function AnalysesPage() {
           <div className="flex items-center gap-2 relative">
             <button 
               onClick={() => setShowYearDropdown(!showYearDropdown)}
-              className="px-4 py-2 rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 text-sm flex items-center gap-2"
+              className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 hover:bg-slate-50 text-sm flex items-center gap-2 shadow-sm"
             >
               {selectedYear} <ChevronDown className="w-4 h-4" />
             </button>
             {showYearDropdown && (
-              <div className="absolute top-12 left-0 bg-[#090E1A] border border-white/10 rounded-lg w-24 z-10">
+              <div className="absolute top-12 left-0 bg-white border border-slate-200 rounded-lg w-24 z-10 shadow-lg">
                 {years.map((year) => (
                   <button
                     key={year}
@@ -156,7 +156,7 @@ export default function AnalysesPage() {
                       setSelectedYear(year)
                       setShowYearDropdown(false)
                     }}
-                    className="w-full text-left px-4 py-2 text-white hover:bg-white/10 border-b border-white/5 last:border-b-0"
+                    className="w-full text-left px-4 py-2 text-slate-900 hover:bg-blue-50 border-b border-slate-100 last:border-b-0"
                   >
                     {year}
                   </button>
@@ -165,7 +165,7 @@ export default function AnalysesPage() {
             )}
           </div>
 
-          {/* Bouton IA */}
+          {/* Bouton Analyse Avancée */}
           <Button
             onClick={handleAIAnalysis}
             disabled={aiLoading}
@@ -179,20 +179,20 @@ export default function AnalysesPage() {
             ) : (
               <>
                 <Zap size={18} />
-                Analyse IA Globale
+                Analyse Globale Avancée
               </>
             )}
           </Button>
         </div>
 
-        {/* Affichage analyse IA */}
+        {/* Affichage analyse avancée */}
         {analysis && (
-          <Card className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-purple-500/30 mb-8">
+          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 mb-8 rounded-2xl">
             <CardContent className="p-6">
-              <h3 className="text-lg font-bold text-white mb-4">🤖 Analyse IA Globale</h3>
-              <div className="text-white/90 space-y-3 text-sm">
+              <h3 className="text-lg font-bold text-slate-900 mb-4">🤖 Analyse Globale Avancée</h3>
+              <div className="text-slate-700 space-y-3 text-sm">
                 {analysis.split('\n').map((line, idx) => (
-                  <p key={idx} className={line.startsWith('**') ? 'font-semibold' : ''}>
+                  <p key={idx} className={line.startsWith('**') ? 'font-semibold text-slate-900' : ''}>
                     {line.replace(/\*\*/g, '')}
                   </p>
                 ))}
@@ -210,43 +210,43 @@ export default function AnalysesPage() {
         )}
 
         {aiError && (
-          <Card className="bg-red-900/20 border-red-500/30 mb-8">
+          <Card className="bg-red-50 border border-red-200 mb-8 rounded-2xl">
             <CardContent className="p-4">
-              <p className="text-red-400">{aiError}</p>
+              <p className="text-red-700">{aiError}</p>
             </CardContent>
           </Card>
         )}
 
         {/* Cartes de résumé */}
         <div className="grid grid-cols-5 gap-4 mb-8">
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-400 mb-2">84%</div>
-              <p className="text-sm text-slate-400">Bresden</p>
+              <div className="text-3xl font-bold text-blue-600 mb-2">84%</div>
+              <p className="text-sm text-slate-600 font-semibold">Bresden</p>
             </CardContent>
           </Card>
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-400 mb-2">92%</div>
-              <p className="text-sm text-slate-400">Dr Martin</p>
+              <div className="text-3xl font-bold text-blue-600 mb-2">92%</div>
+              <p className="text-sm text-slate-600 font-semibold">Dr Martin</p>
             </CardContent>
           </Card>
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-400 mb-2">88%</div>
-              <p className="text-sm text-slate-400">Dr Emmanuel</p>
+              <div className="text-3xl font-bold text-blue-600 mb-2">88%</div>
+              <p className="text-sm text-slate-600 font-semibold">Dr Emmanuel</p>
             </CardContent>
           </Card>
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-400 mb-2">87%</div>
-              <p className="text-sm text-slate-400">Dr J-Claude</p>
+              <div className="text-3xl font-bold text-blue-600 mb-2">87%</div>
+              <p className="text-sm text-slate-600 font-semibold">Dr J-Claude</p>
             </CardContent>
           </Card>
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-400 mb-2">76%</div>
-              <p className="text-sm text-slate-400">Mireille</p>
+              <div className="text-3xl font-bold text-blue-600 mb-2">76%</div>
+              <p className="text-sm text-slate-600 font-semibold">Mireille</p>
             </CardContent>
           </Card>
         </div>
@@ -254,17 +254,17 @@ export default function AnalysesPage() {
         {/* Graphiques */}
         <div className="grid grid-cols-2 gap-8 mb-8">
           {/* CA Moyen par cabinet */}
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">Chiffre d'affaires</CardTitle>
+              <CardTitle className="text-slate-900">Chiffre d'affaires</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={dataCAMoyenParCabinet}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" />
-                  <YAxis stroke="rgba(255,255,255,0.3)" />
-                  <Tooltip contentStyle={{ backgroundColor: "#090E1A", border: "1px solid rgba(255,255,255,0.1)" }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="month" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip contentStyle={{ backgroundColor: "#fff", border: "1px solid #e2e8f0" }} />
                   <Legend />
                   <Line type="monotone" dataKey="Dr Mocanu" stroke="#3b82f6" strokeWidth={2} />
                   <Line type="monotone" dataKey="Dr Bresden" stroke="#10b981" strokeWidth={2} />
@@ -278,17 +278,17 @@ export default function AnalysesPage() {
           </Card>
 
           {/* CA Horaires */}
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">CA horaires</CardTitle>
+              <CardTitle className="text-slate-900">CA horaires</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={dataCAHoraires}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" />
-                  <YAxis stroke="rgba(255,255,255,0.3)" />
-                  <Tooltip contentStyle={{ backgroundColor: "#090E1A", border: "1px solid rgba(255,255,255,0.1)" }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="month" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip contentStyle={{ backgroundColor: "#fff", border: "1px solid #e2e8f0" }} />
                   <Legend />
                   <Bar dataKey="ca" fill="#3b82f6" />
                   <Bar dataKey="objectif" fill="#10b981" />
@@ -298,17 +298,17 @@ export default function AnalysesPage() {
           </Card>
 
           {/* Nb nouveau patient */}
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">Nb nouveau patient</CardTitle>
+              <CardTitle className="text-slate-900">Nb nouveau patient</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={dataNouveauPatient}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" />
-                  <YAxis stroke="rgba(255,255,255,0.3)" />
-                  <Tooltip contentStyle={{ backgroundColor: "#090E1A", border: "1px solid rgba(255,255,255,0.1)" }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="month" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip contentStyle={{ backgroundColor: "#fff", border: "1px solid #e2e8f0" }} />
                   <Bar dataKey="count" fill="#3b82f6" />
                 </BarChart>
               </ResponsiveContainer>
@@ -316,17 +316,17 @@ export default function AnalysesPage() {
           </Card>
 
           {/* Montant moyen des devis */}
-          <Card className="bg-[#090E1A] border-white/10">
+          <Card className="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">Montant moyen des devis proposés</CardTitle>
+              <CardTitle className="text-slate-900">Montant moyen des devis proposés</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={dataNouveauPatient}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="month" stroke="rgba(255,255,255,0.3)" />
-                  <YAxis stroke="rgba(255,255,255,0.3)" />
-                  <Tooltip contentStyle={{ backgroundColor: "#090E1A", border: "1px solid rgba(255,255,255,0.1)" }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="month" stroke="#64748b" />
+                  <YAxis stroke="#64748b" />
+                  <Tooltip contentStyle={{ backgroundColor: "#fff", border: "1px solid #e2e8f0" }} />
                   <Bar dataKey="count" fill="#f59e0b" />
                 </BarChart>
               </ResponsiveContainer>
@@ -334,19 +334,19 @@ export default function AnalysesPage() {
           </Card>
 
           {/* Scoring Performance */}
-          <Card className="bg-[#090E1A] border-white/10 col-span-2">
+          <Card className="bg-white border-slate-200 col-span-2 rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">Scoring Performance</CardTitle>
+              <CardTitle className="text-slate-900">Scoring Performance</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {scoringData.map((item) => (
                   <div key={item.nom} className="flex items-center gap-4">
-                    <span className="text-slate-300 w-32">{item.nom}</span>
-                    <div className="flex-1 bg-white/10 rounded-full h-2">
+                    <span className="text-slate-700 w-32">{item.nom}</span>
+                    <div className="flex-1 bg-slate-200 rounded-full h-2">
                       <div className={`h-2 rounded-full ${item.score >= 90 ? "bg-green-500" : item.score >= 80 ? "bg-yellow-500" : "bg-red-500"}`} style={{ width: `${item.score}%` }} />
                     </div>
-                    <span className="text-white font-bold w-12 text-right">{item.score}%</span>
+                    <span className="text-slate-900 font-bold w-12 text-right">{item.score}%</span>
                   </div>
                 ))}
               </div>
@@ -355,9 +355,9 @@ export default function AnalysesPage() {
         </div>
 
         {/* Répartition des scores */}
-        <Card className="bg-[#090E1A] border-white/10">
+        <Card className="bg-white border-slate-200 rounded-2xl shadow-sm">
           <CardHeader>
-            <CardTitle className="text-white">Répartition des Scores</CardTitle>
+            <CardTitle className="text-slate-900">Répartition des Scores</CardTitle>
           </CardHeader>
           <CardContent className="flex justify-center">
             <ResponsiveContainer width="100%" height={300}>
@@ -375,7 +375,7 @@ export default function AnalysesPage() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "#090E1A", border: "1px solid rgba(255,255,255,0.1)" }} />
+                <Tooltip contentStyle={{ backgroundColor: "#fff", border: "1px solid #e2e8f0" }} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>

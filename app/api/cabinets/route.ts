@@ -1,19 +1,30 @@
-// API pour les cabinets
+// API pour les cabinets - Récupère les données de MongoDB
+import { initializeApp } from '@/lib/db';
+import Cabinet from '@/models/Cabinet';
+
 export async function GET(request: Request) {
   try {
-    const cabinetsData = {
-      cabinets: [
-        {
-          id: 1,
-          nom: "Dental Care Bordeaux",
-          email: "contact@cabinetb.fr",
-          score: 94,
-          statut: "performant",
-          ca: "52 000€",
-          trend: "+5%",
-          rapport: "Envoyé",
-          rapportStatut: "sent",
-        },
+    // Connexion à MongoDB
+    await initializeApp();
+
+    // Récupérer les cabinets depuis la base de données
+    const cabinets = await Cabinet.find().lean();
+
+    // Si aucun cabinet dans la BD, retourner données par défaut
+    if (cabinets.length === 0) {
+      return Response.json({
+        cabinets: [
+          {
+            id: 1,
+            nom: "Dental Care Bordeaux",
+            email: "contact@cabinetb.fr",
+            score: 94,
+            statut: "performant",
+            ca: "52 000€",
+            trend: "+5%",
+            rapport: "Envoyé",
+            rapportStatut: "sent",
+          },
         {
           id: 2,
           nom: "Cabinet Dr. Martin",
@@ -59,10 +70,13 @@ export async function GET(request: Request) {
           rapportStatut: "failed",
         },
       ],
+      }, { status: 200 });
     }
 
-    return Response.json(cabinetsData)
+    // Retourner les cabinets depuis MongoDB
+    return Response.json({ cabinets }, { status: 200 });
   } catch (error) {
-    return Response.json({ error: "Erreur serveur" }, { status: 500 })
+    console.error('Erreur API /cabinets:', error);
+    return Response.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }

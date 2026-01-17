@@ -11,8 +11,8 @@ import { ChatWidget } from "@/components/chatbot/chat-widget" // IMPORTATION DU 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   
-  // Définition des pages sans sidebar (Login, Register, Landing)
-  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/"
+  // Définition des pages sans sidebar (Login, Register, Landing, Admin Login)
+  const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/" || pathname === "/admin/login"
 
   return (
     <html lang="fr">

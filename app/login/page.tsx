@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { Activity, Mail, Lock, ArrowRight, ShieldCheck, Sparkles } from "lucide-react"
+import { Activity, Mail, Lock, ArrowRight, ShieldCheck, Sparkles, AlertCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,11 +11,41 @@ import Link from "next/link"
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
     setIsLoading(true)
-    setTimeout(() => router.push("/dashboard"), 1500)
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role: "admin" || "user" }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || "Identifiants incorrects")
+        setIsLoading(false)
+        return
+      }
+
+      // Sauvegarder le token
+      localStorage.setItem("auth_token", data.token)
+      localStorage.setItem("user_role", data.user.role)
+
+      // Rediriger vers dashboard
+      router.push("/dashboard")
+    } catch (error) {
+      setError("Erreur de connexion")
+      console.error(error)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -66,11 +96,26 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                <p className="text-red-700 font-medium text-sm">{error}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Email Professionnel</label>
               <div className="relative group">
                 <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-blue-600 transition-colors" />
-                <Input required type="email" placeholder="contact@efficience-dentaire.fr" className="h-16 pl-14 rounded-2xl bg-slate-50 border-none font-bold text-slate-900 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                <Input 
+                  required 
+                  type="email" 
+                  placeholder="admin@efficience-dentaire.fr"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  className="h-16 pl-14 rounded-2xl bg-slate-50 border-none font-bold text-slate-900 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50" 
+                />
               </div>
             </div>
 
@@ -78,14 +123,41 @@ export default function LoginPage() {
               <label className="text-[10px] font-black uppercase text-slate-400 ml-2 tracking-widest">Mot de passe</label>
               <div className="relative group">
                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-blue-600 transition-colors" />
-                <Input required type="password" placeholder="••••••••" className="h-16 pl-14 rounded-2xl bg-slate-50 border-none font-bold text-slate-900 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                <Input 
+                  required 
+                  type="password" 
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  className="h-16 pl-14 rounded-2xl bg-slate-50 border-none font-bold text-slate-900 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50" 
+                />
               </div>
             </div>
 
-            <Button className="w-full h-20 rounded-[2rem] bg-slate-900 hover:bg-blue-600 text-white font-black uppercase text-[12px] tracking-[0.4em] transition-all flex gap-4 mt-4 shadow-xl active:scale-95">
-              {isLoading ? "AUTHENTIFICATION..." : "BIENVENUE"} <ArrowRight className="w-5 h-5" />
+            <Button 
+              disabled={isLoading}
+              className="w-full h-20 rounded-[2rem] bg-slate-900 hover:bg-blue-600 text-white font-black uppercase text-[12px] tracking-[0.4em] transition-all flex gap-4 mt-4 shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <>
+                  <Activity className="w-5 h-5 animate-spin" />
+                  AUTHENTIFICATION...
+                </>
+              ) : (
+                <>
+                  CONNEXION <ArrowRight className="w-5 h-5" />
+                </>
+              )}
             </Button>
           </form>
+
+          {/* Info credentials */}
+          <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <p className="text-xs text-blue-900 font-bold mb-2">📝 Identifiants de test:</p>
+            <p className="text-xs text-blue-800">Admin: admin@efficience-dentaire.fr / admin123</p>
+            <p className="text-xs text-blue-800">User: user@efficience-dentaire.fr / user123</p>
+          </div>
 
           <div className="mt-12 text-center border-t border-slate-100 pt-8">
             <Link href="/register" className="text-[11px] font-black uppercase text-slate-400 tracking-widest hover:text-blue-600 group">

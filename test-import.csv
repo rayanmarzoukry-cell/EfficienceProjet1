@@ -1,0 +1,6 @@
+name,email,phone,dateRDV,type,status,cabinetId
+Jean Martin,jean.martin@email.com,0123456789,2026-01-20,consultation,confirmé,cabinet-001
+Marie Dupont,marie.dupont@email.com,0987654321,2026-01-21,détartrage,confirmé,cabinet-002
+Pierre Bernard,pierre.bernard@email.com,0555555555,2026-01-22,détartrage,en attente,cabinet-001
+Sophie Lefevre,sophie.lefevre@email.com,0666666666,2026-01-23,implant,confirmé,cabinet-003
+Luc Moreau,luc.moreau@email.com,0777777777,2026-01-24,nettoyage,confirmé,cabinet-002
