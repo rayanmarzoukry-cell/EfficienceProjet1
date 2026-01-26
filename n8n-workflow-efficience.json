@@ -1,0 +1,89 @@
+{
+  "name": "Efficience - Sync Cabinet Data",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "efficience-sync",
+        "authentication": "headerAuth",
+        "headerAuthApi": {
+          "key": "x-n8n-token",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMTNiZDc3OC1jM2MxLTQ3MDQtODAyOS02ZTgyMTFhMjhlNzMiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY5NDM1ODM3LCJleHAiOjE3NzE5OTU2MDB9.As78f6xtKeI8gqiOWiIhNe7CjGmTOTzMF-ArzFw-COA"
+        }
+      },
+      "name": "Webhook - Efficience Sync",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/admin/webhook-n8n",
+        "authentication": "headerAuth",
+        "headerAuthApi": {
+          "key": "Authorization",
+          "value": "Bearer efficience-n8n-token-2026-secure-xyz789"
+        },
+        "sendBody": true,
+        "bodyParametersUi": "json",
+        "jsonBody": "={\"type\":\"patients\",\"cabinetId\":\"1\",\"data\":{{$json.body}}}"
+      },
+      "name": "Send to Efficience",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [550, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "message",
+              "value": "Data synchronized to Efficience",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "name": "Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Efficience Sync": {
+      "main": [
+        [
+          {
+            "node": "Send to Efficience",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Efficience": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["efficience", "sync", "cabinet"]
+}

@@ -28,7 +28,7 @@ npm run test:admin      # Test admin authentication
 2. **Service Layer** (`lib/`) - Business logic (AI, database, authentication, reports)
 3. **Context & State** (`context/AppContext.tsx`) - Centralized patient/cabinet data with MongoDB fallback
 
-**Critical Pattern:** `AppProvider` wraps entire app in [app/layout.tsx](app/layout.tsx) → all pages access shared state, MongoDB health check, mock data fallback.
+**Critical Pattern:** `AppProvider` wraps entire app in [app/layout.tsx](../app/layout.tsx) → all pages access shared state, MongoDB health check, mock data fallback.
 
 ### Data Flow
 ```
@@ -47,22 +47,22 @@ Response → Context Update → Re-render
 
 | File | Purpose | Key Exports/Functions |
 |------|---------|--------|
-| [context/AppContext.tsx](context/AppContext.tsx) | Global patient data + MongoDB fallback | `AppProvider`, `useAppContext()` - patients array, `refreshData()`, fallback `defaultPatients` |
-| [lib/db.ts](lib/db.ts) | MongoDB connection pooling | `initializeApp()` - caches connection in global.mongoose to avoid exhaustion |
-| [lib/openai-service.ts](lib/openai-service.ts) | AI predictions & insights | `generatePredictions()`, `generateRecommendations()`, `analyzeCabinet()` (model: gpt-4o-mini) |
-| [lib/admin-auth.ts](lib/admin-auth.ts) | JWT + bcrypt auth for admins | `hashPassword()`, `verifyPassword()`, `generateToken()`, `validateToken()` |
-| [lib/types.ts](lib/types.ts) | TypeScript interfaces | Cabinet, DonneesCabinet, AnalysePerformance, Rapport, User |
-| [app/layout.tsx](app/layout.tsx) | Root layout with AppProvider + ChatWidget | Sidebar visibility logic, theme setup, Ollama chatbot integration |
-| [app/dashboard/page.tsx](app/dashboard/page.tsx) | Main analytics dashboard | KPI cards, Recharts graphs, real-time /api/stats polling |
-| [app/admin/page.tsx](app/admin/page.tsx) | Admin panel (users, imports, audit logs) | ProtectedLayout wrapper, AdminImport, AuditLog components |
-| [hooks/use-auth.ts](hooks/use-auth.ts) | Client-side auth hook | `useAuth()` - accessToken, user, isAuthenticated, refreshToken() |
-| [hooks/use-ai.ts](hooks/use-ai.ts) | AI wrapper hook | `useAI()` - getPredictions(), getRecommendations(), getAnalysis() with loading/error states |
+| [context/AppContext.tsx](../context/AppContext.tsx) | Global patient data + MongoDB fallback | `AppProvider`, `useAppContext()` - patients array, `refreshData()`, fallback `defaultPatients` |
+| [lib/db.ts](../lib/db.ts) | MongoDB connection pooling | `initializeApp()` - caches connection in global.mongoose to avoid exhaustion |
+| [lib/openai-service.ts](../lib/openai-service.ts) | AI predictions & insights | `generatePredictions()`, `generateRecommendations()`, `analyzeCabinet()` (model: gpt-4o-mini) |
+| [lib/admin-auth.ts](../lib/admin-auth.ts) | JWT + bcrypt auth for admins | `hashPassword()`, `verifyPassword()`, `generateToken()`, `validateToken()` |
+| [lib/types.ts](../lib/types.ts) | TypeScript interfaces | Cabinet, DonneesCabinet, AnalysePerformance, Rapport, User |
+| [app/layout.tsx](../app/layout.tsx) | Root layout with AppProvider + ChatWidget | Sidebar visibility logic, theme setup, Ollama chatbot integration |
+| [app/dashboard/page.tsx](../app/dashboard/page.tsx) | Main analytics dashboard | KPI cards, Recharts graphs, real-time /api/stats polling |
+| [app/admin/page.tsx](../app/admin/page.tsx) | Admin panel (users, imports, audit logs) | ProtectedLayout wrapper, AdminImport, AuditLog components |
+| [hooks/use-auth.ts](../hooks/use-auth.ts) | Client-side auth hook | `useAuth()` - accessToken, user, isAuthenticated, refreshToken() |
+| [hooks/use-ai.ts](../hooks/use-ai.ts) | AI wrapper hook | `useAI()` - getPredictions(), getRecommendations(), getAnalysis() with loading/error states |
 
 ---
 
 ## Middleware & Protected Routes
 
-**Middleware** ([middleware.ts](middleware.ts)) protects these paths:
+**Middleware** ([middleware.ts](../middleware.ts)) protects these paths:
 ```
 /dashboard/* → Requires auth_token cookie
 /admin/*     → Requires admin role
@@ -134,7 +134,7 @@ const [cabinets, setCabinets] = useState([])       // Fetched once, cached
 ```
 
 ### 3. AI Integration (OpenAI gpt-4o-mini)
-Located in [lib/openai-service.ts](lib/openai-service.ts):
+Located in [lib/openai-service.ts](../lib/openai-service.ts):
 - `generatePredictions(cabinetData)` - Revenue, patient growth, conversion forecasts
 - `generateRecommendations(data, prediction)` - Actionable improvements with priority
 - `analyzeCabinet(data)` - Deep performance analysis (used in `/app/debug-ia/`)
@@ -147,13 +147,26 @@ const predictions = await getPredictions(cabinetData)
 ```
 
 ### 4. MongoDB Connection Pattern
-**Required:** Connection pooling in [lib/db.ts](lib/db.ts) prevents connection exhaustion:
+**Required:** Connection pooling in [lib/db.ts](../lib/db.ts) prevents connection exhaustion:
 ```typescript
 if (cached.conn) return cached.conn              // Reuse existing
 if (cached.promise) return cached.promise        // Wait for pending
 cached.promise = connect()                       // Create & cache promise
 cached.conn = await cached.promise               // Await and cache
 ```
+
+### 4.5 Mongoose Models Pattern
+Models in `/models/*.ts` (e.g., `Cabinet.ts`, `Patient.ts`) follow this pattern:
+```typescript
+const Schema = new mongoose.Schema({ /* fields */ })
+const Model = mongoose.models.ModelName || mongoose.model('ModelName', Schema, 'collection_name')
+export default Model
+```
+
+Key patterns:
+- Always check `mongoose.models` cache before creating new model (prevents "Schema already registered" errors)
+- Use explicit collection names in `mongoose.model()` third argument
+- Import models in API routes to ensure schema registration before queries
 
 ### 5. API Route Structure
 Routes in `app/api/[resource]/route.ts`:
@@ -213,19 +226,56 @@ if (!user) return <Redirect to="/admin/login" />
 ## Sidebar & Navigation Logic
 - **Hidden on:** `/login`, `/register`, `/` (auth pages)
 - **Visible on:** All authenticated pages
-- Implemented in [app/layout.tsx](app/layout.tsx) via `pathname` check
+- Implemented in [app/layout.tsx](../app/layout.tsx) via `pathname` check
 
 ---
 
 ## Chatbot Integration
-- **Ollama-based chatbot** integrated in [components/chatbot/chat-widget.tsx](components/chatbot/chat-widget.tsx)
+- **Ollama-based chatbot** integrated in [components/chatbot/chat-widget.tsx](../components/chatbot/chat-widget.tsx)
 - Visible on all pages (placed in root layout after AppProvider)
 - Models: Custom Modelfile for dental specialty available in `ProjetOllama/`
 
 ---
 
+## N8N Automation Integration
+
+**Purpose:** Automate data imports without manual intervention (CSV/Excel → MongoDB)
+
+### Webhook Endpoints
+- **`POST /api/admin/import`** - Main webhook for file imports (requires Bearer token)
+- **`POST /api/admin/trigger-sync`** - Triggers N8N workflow from admin UI
+- **`POST /api/admin/webhook-n8n`** - N8N callback with validated data
+
+### Data Flow
+```
+File in Dropbox/Drive
+    ↓ (N8N detects)
+Validate & Parse
+    ↓
+POST /api/admin/import
+    ↓
+Insert into MongoDB
+    ↓
+Dashboard auto-refreshes (10s polling)
+```
+
+### Supported Import Types
+- `patients`: nom, prenom, email, telephone, dateNaissance
+- `finances`: cabinetId, periode, chiffreAffaires, revenus, depenses
+- `production`: cabinetId, praticien, periode, heures, actes
+
+### Admin UI
+- Sync button in `/admin/import` page
+- Real-time status notifications
+- Audit logging to `webhook_logs` collection
+- Bearer token authentication required
+
+**See:** `N8N_INTEGRATION_COMPLETE_GUIDE.md` for full setup instructions
+
+---
+
 ## Type System
-Main types in [lib/types.ts](lib/types.ts):
+Main types in [lib/types.ts](../lib/types.ts):
 ```typescript
 interface Cabinet {
   id: number; nom: string; objectifs: { chiffreAffaires, nombreRendezVous, tauxAbsence }
@@ -245,7 +295,7 @@ Use these when creating API responses and component props - TypeScript ensures t
 ## Testing & Debugging
 
 ### Check Server Health
-[context/AppContext.tsx](context/AppContext.tsx) has a health check that sets `isServerOnline` state.
+[context/AppContext.tsx](../context/AppContext.tsx) has a health check that sets `isServerOnline` state.
 
 ### Mock Data Fallback
 If MongoDB is unavailable, app uses default patient data from `defaultPatients` array in AppContext.
@@ -279,11 +329,11 @@ node -e "console.log(process.env.MONGODB_URI)" # Check MongoDB URI loaded
 ---
 
 ## Key Resources
-- [GUIDE_DEMARRAGE_RAPIDE.md](GUIDE_DEMARRAGE_RAPIDE.md) - Quick start setup
-- [IA_INTEGRATION_GUIDE.md](IA_INTEGRATION_GUIDE.md) - Deep dive on AI features
-- [PROJECT_ANALYSIS_REPORT.md](PROJECT_ANALYSIS_REPORT.md) - Complete architecture breakdown
-- [MODIFICATIONS_2026.md](MODIFICATIONS_2026.md) - January 2026 update details
-- [README_ANALYTICS.md](README_ANALYTICS.md) - Full feature documentation
+- [GUIDE_DEMARRAGE_RAPIDE.md](../GUIDE_DEMARRAGE_RAPIDE.md) - Quick start setup
+- [IA_INTEGRATION_GUIDE.md](../IA_INTEGRATION_GUIDE.md) - Deep dive on AI features
+- [PROJECT_ANALYSIS_REPORT.md](../PROJECT_ANALYSIS_REPORT.md) - Complete architecture breakdown
+- [MODIFICATIONS_2026.md](../MODIFICATIONS_2026.md) - January 2026 update details
+- [README_ANALYTICS.md](../README_ANALYTICS.md) - Full feature documentation
 
 ---
 
@@ -300,3 +350,29 @@ node -e "console.log(process.env.MONGODB_URI)" # Check MongoDB URI loaded
 
 ❌ **Don't:** Expose secrets in `NEXT_PUBLIC_*` env vars  
 ✅ **Do:** Keep secrets on server, expose only safe data to client
+
+❌ **Don't:** Skip Bearer token validation on N8N webhook endpoints  
+✅ **Do:** Validate `Authorization: Bearer <token>` header on `/api/admin/*` routes
+
+---
+
+## N8N-Specific Patterns
+
+### Webhook Security
+```typescript
+// In /api/admin/import route
+const token = req.headers.authorization?.replace('Bearer ', '')
+if (token !== process.env.N8N_WEBHOOK_TOKEN) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}
+```
+
+### Data Validation
+- Always validate required columns before MongoDB insert
+- Log failed imports to `webhook_logs` collection
+- Return structured errors: `{ success: false, error: string, imported: 0 }`
+
+### Real-time Updates
+- Dashboard polls `/api/stats` every 10 seconds automatically
+- N8N workflows complete in 500-800ms
+- MongoDB inserts within 100-200ms for typical batch sizes

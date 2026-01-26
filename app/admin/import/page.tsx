@@ -12,6 +12,7 @@ export default function AdminImport() {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle")
   const [message, setMessage] = useState("")
   const [webhookUrl, setWebhookUrl] = useState("https://votredomaine.com")
+  const [resourceType, setResourceType] = useState("patients")
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -62,6 +63,8 @@ export default function AdminImport() {
     try {
       const formData = new FormData()
       formData.append("file", file)
+      formData.append("resourceType", resourceType || "patients")
+      formData.append("adminEmail", "admin@efficience-dentaire.fr")
 
       const response = await fetch("/api/admin/import", {
         method: "POST",
@@ -167,14 +170,28 @@ export default function AdminImport() {
             )}
 
             {file && (
-              <button
-                onClick={handleUpload}
-                disabled={uploading}
-                className="w-full mt-6 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-400 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition"
-              >
-                <Upload size={20} />
-                {uploading ? "En cours..." : "Importer le fichier"}
-              </button>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-900 mb-2">Type de données</label>
+                  <select
+                    value={resourceType}
+                    onChange={(e) => setResourceType(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white text-slate-900"
+                  >
+                    <option value="patients">Patients</option>
+                    <option value="finances">Finances</option>
+                    <option value="production">Production</option>
+                  </select>
+                </div>
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-slate-400 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition"
+                >
+                  <Upload size={20} />
+                  {uploading ? "En cours..." : "Importer le fichier"}
+                </button>
+              </div>
             )}
           </CardContent>
         </Card>

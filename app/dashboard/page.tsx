@@ -58,7 +58,7 @@ export default function Dashboard() {
         {/* HEADER avec salutation */}
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-4xl font-black text-slate-900">Bonjour Younis 👋</h1>
+            <h1 className="text-4xl font-black text-slate-900">Bonjour 👋</h1>
             <p className="text-slate-600 mt-2">Date/Période : Données mises à jour du : 01/01/2026 (Mois d'analyse : Décembre 2025)</p>
           </div>
           <button 

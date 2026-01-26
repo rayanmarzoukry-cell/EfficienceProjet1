@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { connectDB } from "@/lib/db"
+import { initializeApp } from "@/lib/db"
 import Patient from "@/models/Patient"
 import Cabinet from "@/models/Cabinet"
 import RendezVous from "@/models/RendezVous"
@@ -20,7 +20,9 @@ export async function POST(request: NextRequest) {
   let auditId: string | null = null
   
   try {
-    await connectDB()
+    console.log("📥 Import started")
+    await initializeApp()
+    console.log("✅ MongoDB connected")
 
     // Récupérer les données du formulaire
     const formData = await request.formData()
@@ -28,7 +30,10 @@ export async function POST(request: NextRequest) {
     const resourceType = formData.get("resourceType") as string
     const adminEmail = formData.get("adminEmail") as string
 
+    console.log(`📋 File: ${file?.name}, Type: ${resourceType}, Admin: ${adminEmail}`)
+
     if (!file || !resourceType || !adminEmail) {
+      console.log("❌ Missing required fields")
       return NextResponse.json(
         { error: "Fichier, type de ressource et email admin requis" },
         { status: 400 }
@@ -37,6 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Créer un log d'audit
     const auditLog = new AuditLog({
+      adminId: adminEmail,
       adminEmail,
       action: "import_data",
       resource: resourceType,
@@ -125,7 +131,7 @@ export async function POST(request: NextRequest) {
       await AuditLog.findByIdAndUpdate(auditId, {
         status: "error",
         errorMessage: error.message,
-      })
+      }).catch(() => {})
     }
 
     console.error("❌ Erreur import:", error)
@@ -145,15 +151,16 @@ async function importPatient(row: Record<string, string>) {
 
   // Upsert patient
   await Patient.findOneAndUpdate(
-    { email },
+    { email: email } as any,
     {
       name,
       email,
       phone: phone || "",
       dateRDV: daterdv ? new Date(daterdv) : new Date(),
-      type: type || "consultation",
-      status: status || "confirmé",
-      cabinetId: cabinetid || "",
+      time: "09:00",
+      type: type || "CONTRÔLE",
+      status: status || "ATTENTE",
+      cabinetId: cabinetid || "default",
     },
     { upsert: true, new: true }
   )
@@ -168,7 +175,7 @@ async function importCabinet(row: Record<string, string>) {
 
   // Upsert cabinet
   await Cabinet.findOneAndUpdate(
-    { nom },
+    { nom } as any,
     {
       nom,
       email: email || "",
@@ -190,15 +197,20 @@ async function importRendezVous(row: Record<string, string>) {
 
   // Upsert rendez-vous
   await RendezVous.findOneAndUpdate(
-    { patientId: patientid, cabinetId: cabinetid, dateRDV: new Date(date) },
+    { 
+      patientId: patientid, 
+      cabinetId: cabinetid, 
+      dateRDV: new Date(date) 
+    } as any,
     {
       patientId: patientid,
       cabinetId: cabinetid,
       dateRDV: new Date(date),
-      type: type || "consultation",
-      status: status || "confirmé",
+      time: "14:00",
+      type: type || "CONTRÔLE",
+      status: status || "SCHEDULED",
       duration: parseInt(duration) || 30,
-    },
+    } as any,
     { upsert: true, new: true }
   )
 }

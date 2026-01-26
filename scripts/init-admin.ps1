@@ -27,7 +27,7 @@ $adminPasswordPlain = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
 
 # Validate password
 if ($adminPasswordPlain.Length -lt 8) {
-    Write-Host "✗ Le mot de passe doit contenir au moins 8 caractères" -ForegroundColor Red
+    Write-Host "[ERROR] Le mot de passe doit contenir au moins 8 caracteres" -ForegroundColor Red
     exit 1
 }
 
@@ -52,21 +52,21 @@ try {
     
     if ($responseData.success) {
         Write-Host ""
-        Write-Host "✓ Administrateur créé avec succès!" -ForegroundColor Green
+        Write-Host "[SUCCESS] Administrateur cree avec succes!" -ForegroundColor Green
         Write-Host ""
         Write-Host "Informations de connexion:" -ForegroundColor Yellow
         Write-Host "URL: http://localhost:3000/admin/login"
         Write-Host "Email: $adminEmail"
-        Write-Host "Mot de passe: (celui que vous avez entré)"
+        Write-Host "Mot de passe: (celui que vous avez entre)"
         Write-Host ""
         Write-Host "Vous pouvez maintenant vous connecter!" -ForegroundColor Green
     } else {
-        Write-Host "✗ Erreur lors de la création:" -ForegroundColor Red
+        Write-Host "[ERROR] Erreur lors de la creation:" -ForegroundColor Red
         Write-Host $responseData
         exit 1
     }
 } catch {
-    Write-Host "✗ Erreur lors de la création:" -ForegroundColor Red
+    Write-Host "[ERROR] Erreur lors de la creation:" -ForegroundColor Red
     Write-Host $_.Exception.Message
     exit 1
 }

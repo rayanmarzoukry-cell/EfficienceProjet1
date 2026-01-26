@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 # Charger les variables d'environnement (lien MongoDB)
 load_dotenv()
 
+# PDF Export - optionnel
 try:
     from reportlab.lib.pagesizes import letter
     from reportlab.pdfgen import canvas

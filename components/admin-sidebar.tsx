@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Users, Building2, Upload, Settings, LogOut, Activity, Shield } from "lucide-react"
 
-export function AdminSidebar() {
+export default function AdminSidebar() {
   const pathname = usePathname()
   const [role, setRole] = useState("")
 
@@ -75,5 +75,3 @@ export function AdminSidebar() {
     </aside>
   )
 }
-
-export default AdminSidebar
