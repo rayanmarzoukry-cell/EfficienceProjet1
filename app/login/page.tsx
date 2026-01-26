@@ -38,9 +38,14 @@ export default function LoginPage() {
       // Sauvegarder le token
       localStorage.setItem("auth_token", data.token)
       localStorage.setItem("user_role", data.user.role)
+      localStorage.setItem("user", JSON.stringify(data.user))
 
-      // Rediriger vers dashboard
-      router.push("/dashboard")
+      // Rediriger vers admin ou dashboard selon le rôle
+      if (data.user.role === "admin") {
+        router.push("/admin")
+      } else {
+        router.push("/dashboard")
+      }
     } catch (error) {
       setError("Erreur de connexion")
       console.error(error)

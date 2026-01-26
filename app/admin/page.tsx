@@ -4,11 +4,11 @@ import { useState, useEffect } from "react"
 import ProtectedLayout from "@/components/layout/protected-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Upload, BarChart3, Users, FileText, CheckCircle2, History, Settings } from "lucide-react"
 import AdminImport from "@/components/admin/admin-import"
 import AuditLog from "@/components/admin/audit-log"
 import AdminAnalytics from "@/components/admin/admin-analytics"
+import N8nSyncButton from "@/components/admin/n8n-sync-button"
 
 interface AdminStats {
   totalCabinets: number
@@ -70,40 +70,57 @@ export default function AdminPage() {
         </div>
 
         {/* Tabs Navigation */}
-        <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 border-b border-slate-200 bg-transparent p-0">
-            <TabsTrigger
-              value="overview"
-              className="border-b-2 border-transparent data-[state=active]:border-blue-600 rounded-none"
+        <div className="w-full">
+          <div className="grid w-full grid-cols-4 border-b border-slate-200 bg-transparent p-0">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`border-b-2 rounded-none px-4 py-2 flex items-center gap-2 transition-colors ${
+                activeTab === "overview"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
             >
-              <BarChart3 className="w-4 h-4 mr-2" />
+              <BarChart3 className="w-4 h-4" />
               Accueil
-            </TabsTrigger>
-            <TabsTrigger
-              value="import"
-              className="border-b-2 border-transparent data-[state=active]:border-blue-600 rounded-none"
+            </button>
+            <button
+              onClick={() => setActiveTab("import")}
+              className={`border-b-2 rounded-none px-4 py-2 flex items-center gap-2 transition-colors ${
+                activeTab === "import"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
             >
-              <Upload className="w-4 h-4 mr-2" />
+              <Upload className="w-4 h-4" />
               Importation
-            </TabsTrigger>
-            <TabsTrigger
-              value="audit"
-              className="border-b-2 border-transparent data-[state=active]:border-blue-600 rounded-none"
+            </button>
+            <button
+              onClick={() => setActiveTab("audit")}
+              className={`border-b-2 rounded-none px-4 py-2 flex items-center gap-2 transition-colors ${
+                activeTab === "audit"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
             >
-              <History className="w-4 h-4 mr-2" />
+              <History className="w-4 h-4" />
               Audit
-            </TabsTrigger>
-            <TabsTrigger
-              value="analytics"
-              className="border-b-2 border-transparent data-[state=active]:border-blue-600 rounded-none"
+            </button>
+            <button
+              onClick={() => setActiveTab("analytics")}
+              className={`border-b-2 rounded-none px-4 py-2 flex items-center gap-2 transition-colors ${
+                activeTab === "analytics"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
             >
-              <Settings className="w-4 h-4 mr-2" />
+              <Settings className="w-4 h-4" />
               Analyses
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
 
           {/* OVERVIEW TAB */}
-          <TabsContent value="overview" className="space-y-8 mt-8">
+          {activeTab === "overview" && (
+            <div className="space-y-8 mt-8">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="border-slate-200 bg-white">
@@ -156,6 +173,11 @@ export default function AdminPage() {
                   </p>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* N8N Sync Button */}
+            <div className="grid grid-cols-1 gap-6">
+              <N8nSyncButton />
             </div>
 
             {/* System Status */}
@@ -288,23 +310,30 @@ export default function AdminPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+            </div>
+          )}
 
           {/* IMPORT TAB */}
-          <TabsContent value="import" className="mt-8">
+          {activeTab === "import" && (
+            <div className="mt-8">
             <AdminImport />
-          </TabsContent>
+            </div>
+          )}
 
           {/* AUDIT TAB */}
-          <TabsContent value="audit" className="mt-8">
+          {activeTab === "audit" && (
+            <div className="mt-8">
             <AuditLog />
-          </TabsContent>
+            </div>
+          )}
 
           {/* ANALYTICS TAB */}
-          <TabsContent value="analytics" className="mt-8">
+          {activeTab === "analytics" && (
+            <div className="mt-8">
             <AdminAnalytics />
-          </TabsContent>
-        </Tabs>
+            </div>
+          )}
+        </div>
       </div>
     </ProtectedLayout>
   )

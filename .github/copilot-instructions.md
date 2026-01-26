@@ -1,172 +1,212 @@
 # AI Copilot Instructions - Efficience Analytics
 
-**Project:** Dental practice management & analytics platform  
-**Tech Stack:** Next.js 13+ (App Router), TypeScript, React, Tailwind CSS, MongoDB, OpenAI  
-**Language:** French (user-facing), TypeScript/JavaScript (codebase)  
+**Project:** Dental practice management & analytics platform (Phase 4 - January 2026)  
+**Tech Stack:** Next.js 13+ (App Router), TypeScript, React, Tailwind CSS, MongoDB, OpenAI (gpt-4o-mini), Ollama chatbot  
+**Language:** French (user-facing), TypeScript/JavaScript (codebase), French comments in code  
 
 ---
 
-## Architecture Overview
+## Quick Start for AI Agents
 
-### Core Structure: "Three-Layer Model"
-1. **UI Layer** (`app/`, `components/`) - React components with Radix UI + Tailwind
-2. **Service Layer** (`lib/`) - Business logic (AI, database, email, PDF, KPIs)
-3. **Context & State** (`context/AppContext.tsx`) - Centralized patient/clinic data
+**Environment & Key Secrets:**
+- `MONGODB_URI`: MongoDB Atlas connection (`mongodb+srv://...`)
+- `OPENAI_API_KEY`: OpenAI API (gpt-4o-mini model used)
+- `MONGODB_DB`: Database name (typically `rayan_dev2` in dev)
 
-**Key Pattern:** All pages use `AppProvider` wrapper (in `app/layout.tsx`). This ensures shared state across the app for patient data and server connectivity.
+**How to start developing:**
+```bash
+npm run dev              # Starts Next.js on http://localhost:3000
+npm run init:admin:*    # Initialize admin interface (choose bash/powershell/python)
+npm run test:admin      # Test admin authentication
+```
+
+---
+
+## Architecture: Three-Layer Model
+
+1. **UI Layer** (`app/`, `components/`) - React components with Radix UI + Tailwind CSS
+2. **Service Layer** (`lib/`) - Business logic (AI, database, authentication, reports)
+3. **Context & State** (`context/AppContext.tsx`) - Centralized patient/cabinet data with MongoDB fallback
+
+**Critical Pattern:** `AppProvider` wraps entire app in [app/layout.tsx](app/layout.tsx) → all pages access shared state, MongoDB health check, mock data fallback.
 
 ### Data Flow
 ```
-User Action → React Component ("use client")
+User Action → "use client" Component
   ↓
-Hook (useAI, useAuth, useCustom)
+Hook (useAuth, useAI, useAdmin-Auth)
   ↓
-Service Layer (lib/*.ts)
+API Route (app/api/*/route.ts) OR Service (lib/*.ts)
   ↓
-API Route (app/api/*/) OR External Service (MongoDB, OpenAI)
+MongoDB (via mongoose with connection pooling) OR OpenAI
   ↓
-Response → State Update → Re-render
+Response → Context Update → Re-render
 ```
 
+## Critical Files & Their Roles
+
+| File | Purpose | Key Exports/Functions |
+|------|---------|--------|
+| [context/AppContext.tsx](context/AppContext.tsx) | Global patient data + MongoDB fallback | `AppProvider`, `useAppContext()` - patients array, `refreshData()`, fallback `defaultPatients` |
+| [lib/db.ts](lib/db.ts) | MongoDB connection pooling | `initializeApp()` - caches connection in global.mongoose to avoid exhaustion |
+| [lib/openai-service.ts](lib/openai-service.ts) | AI predictions & insights | `generatePredictions()`, `generateRecommendations()`, `analyzeCabinet()` (model: gpt-4o-mini) |
+| [lib/admin-auth.ts](lib/admin-auth.ts) | JWT + bcrypt auth for admins | `hashPassword()`, `verifyPassword()`, `generateToken()`, `validateToken()` |
+| [lib/types.ts](lib/types.ts) | TypeScript interfaces | Cabinet, DonneesCabinet, AnalysePerformance, Rapport, User |
+| [app/layout.tsx](app/layout.tsx) | Root layout with AppProvider + ChatWidget | Sidebar visibility logic, theme setup, Ollama chatbot integration |
+| [app/dashboard/page.tsx](app/dashboard/page.tsx) | Main analytics dashboard | KPI cards, Recharts graphs, real-time /api/stats polling |
+| [app/admin/page.tsx](app/admin/page.tsx) | Admin panel (users, imports, audit logs) | ProtectedLayout wrapper, AdminImport, AuditLog components |
+| [hooks/use-auth.ts](hooks/use-auth.ts) | Client-side auth hook | `useAuth()` - accessToken, user, isAuthenticated, refreshToken() |
+| [hooks/use-ai.ts](hooks/use-ai.ts) | AI wrapper hook | `useAI()` - getPredictions(), getRecommendations(), getAnalysis() with loading/error states |
+
 ---
 
-## Critical Files & Their Purpose
+## Middleware & Protected Routes
 
-| File | Purpose | Key Content |
-|------|---------|-------------|
-| [context/AppContext.tsx](context/AppContext.tsx) | Global state for patients, cabinet data | Patient CRUD, server health check, fallback mock data |
-| [lib/openai-service.ts](lib/openai-service.ts) | AI predictions & recommendations | `generatePredictions()`, `generateRecommendations()`, `generateReportWithAI()`, `analyzeCabinet()` |
-| [lib/db.ts](lib/db.ts) | MongoDB connection management | Persistent connection caching (required pattern) |
-| [app/layout.tsx](app/layout.tsx) | Root layout with AppProvider | Sidebar visibility logic, ChatWidget placement, theme |
-| [app/dashboard/page.tsx](app/dashboard/page.tsx) | Main analytics dashboard | KPI cards, charts (Recharts), real-time metrics |
-| [app/api/analyses/](app/api/analyses/) | Analysis endpoints | Revenue, hours, appointments by practitioner |
-| [lib/report-utils.ts](lib/report-utils.ts) | Report generation utilities | `generatePDF()`, `exportToCSV()`, `sendEmailReport()` |
-| [lib/kpiService.ts](lib/kpiService.ts) | KPI calculations | Cabinet performance metrics, production tracking |
+**Middleware** ([middleware.ts](middleware.ts)) protects these paths:
+```
+/dashboard/* → Requires auth_token cookie
+/admin/*     → Requires admin role
+/patients/*  → Requires auth_token
+/cabinets/*  → Requires auth_token
+/rapports/*  → Requires auth_token
+```
 
----
+Unauthenticated users redirected to `/login`. Roles: `admin` (full access) | `user` (limited access)
 
 ## Development Workflows
 
 ### Starting the Dev Server
 ```bash
-npm run dev  # Starts on http://localhost:3000
+npm run dev  # Starts Next.js on http://localhost:3000
 ```
-Automatically redirects to `/register`. Use mock auth or MongoDB integration.
+- Automatically checks MongoDB connection on load
+- Falls back to mock data if MongoDB unavailable
+- Redirects to `/login` if no auth_token
 
-### Building for Production
+### Admin Initialization (First Time Setup)
 ```bash
-npm run build
-npm start
+# Choose one - creates admin user in MongoDB
+npm run init:admin:bash       # Linux/Mac
+npm run init:admin:powershell # Windows PowerShell
+npm run init:admin:python     # Cross-platform Python
+
+# Test admin auth
+npm run test:admin
 ```
 
-### Linting
+### Building & Production
 ```bash
-npm run lint
+npm run build  # Outputs to .next/
+npm start      # Runs production server
+npm run lint   # TypeScript + ESLint check
 ```
 
 ### Key Environment Variables (`.env.local`)
 ```env
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/efficience
-OPENAI_API_KEY=sk-proj-your-key-here
-DATABASE_NAME=efficience
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/rayan_dev2?retryWrites=true
+OPENAI_API_KEY=sk-proj-...
+MONGODB_DB=rayan_dev2
+JWT_SECRET=change-in-production  # Used in lib/admin-auth.ts
 ```
 
-**Important:** Server-side code can access env vars; client-side needs `NEXT_PUBLIC_` prefix.
-
----
+**Important:** Server-side code can access all `env` vars; client-side needs `NEXT_PUBLIC_` prefix.
 
 ## Project-Specific Conventions
 
 ### 1. Component Structure
 - All interactive components use `"use client"` directive
-- Styling: **Tailwind CSS** + **Shadcn/ui** components (50+ pre-built)
-- Example: Dark theme background: `#030712`, primary blue: `#3b82f6`, success green: `#10b981`
-- Charts: **Recharts** (responsive containers with fixed heights in parents)
+- Styling: **Tailwind CSS** + **Shadcn/ui** (50+ pre-built components in `components/ui/`)
+- Color scheme: Dark background `#030712`, primary blue `#3b82f6`, success green `#10b981`, warning orange `#f59e0b`
+- Charts: **Recharts** - always wrap in `<ResponsiveContainer>` with fixed parent height
+- File structure: Interactive components in `components/`, UI primitives in `components/ui/`, layout in `components/layout/`
 
-### 2. State Management
-- **Global:** `AppContext.tsx` - for shared patient/clinic data
-- **Local:** `useState()` in individual components
-- **Server State:** MongoDB via API routes
+### 2. State Management Pattern
+- **Global State:** `AppContext.tsx` - shared patients, cabinets, server status (no Redux needed)
+- **Local State:** `useState()` for component-specific UI
+- **Server State:** Fetch from `/api/*` routes, cache in React state, use stale-while-revalidate pattern
+- **Rule:** Never duplicate data between Context and component state
 
-**Pattern:** Never duplicate data. Always fetch from `AppContext` or API endpoints.
+Example pattern:
+```tsx
+const { patients, refreshData } = useAppContext()  // From global context
+const [filters, setFilters] = useState({})         // Local UI state
+const [cabinets, setCabinets] = useState([])       // Fetched once, cached
+```
 
-### 3. AI Integration (OpenAI Claude 3.5 Sonnet)
+### 3. AI Integration (OpenAI gpt-4o-mini)
 Located in [lib/openai-service.ts](lib/openai-service.ts):
-- `generatePredictions(data)` - Predicts revenue, patient growth, conversion rates
-- `generateRecommendations(data, prediction)` - Actionable clinic improvements
-- `generateReportWithAI(cabinetName, data, period)` - Generates AI-powered reports
-- `analyzeCabinet(data)` - Deep clinic analysis for insights
+- `generatePredictions(cabinetData)` - Revenue, patient growth, conversion forecasts
+- `generateRecommendations(data, prediction)` - Actionable improvements with priority
+- `analyzeCabinet(data)` - Deep performance analysis (used in `/app/debug-ia/`)
+- All responses are JSON-structured, French context in prompts
 
-Usage example:
+Usage via hook:
 ```tsx
-import { useAI } from '@/hooks/use-ai'
-
-const { predictions, loading } = await useAI(cabinetData)
+const { getPredictions, getRecommendations } = useAI()
+const predictions = await getPredictions(cabinetData)
 ```
 
-### 4. Database Pattern
-MongoDB integration uses **connection pooling** to avoid exhausting connections:
+### 4. MongoDB Connection Pattern
+**Required:** Connection pooling in [lib/db.ts](lib/db.ts) prevents connection exhaustion:
 ```typescript
-// Required pattern in lib/db.ts
-if (cached.conn) return cached.conn  // Reuse existing
-if (cached.promise) return cached.promise  // Wait for pending
-// Otherwise create new connection and cache it
+if (cached.conn) return cached.conn              // Reuse existing
+if (cached.promise) return cached.promise        // Wait for pending
+cached.promise = connect()                       // Create & cache promise
+cached.conn = await cached.promise               // Await and cache
 ```
 
-### 5. API Route Naming
-- `app/api/[resource]/route.ts` - Standard CRUD
-- `app/api/ai/*` - AI endpoints
-- `app/api/analyses/*` - Analysis data (realisation, jours, rdv)
-- `app/api/reports/*` - Report generation
-- Return JSON only (no HTML from API routes)
+### 5. API Route Structure
+Routes in `app/api/[resource]/route.ts`:
+- **CRUD patterns:** `/api/cabinets`, `/api/patients`, `/api/rapports`
+- **AI endpoints:** `/api/ai/predictions`, `/api/ai/recommendations`
+- **Admin only:** `/api/admin/users`, `/api/admin/audit`
+- **Stats:** `/api/stats` (returns aggregated MongoDB data)
+- **Auth:** `/api/auth/login`, `/api/auth/refresh`, `/api/auth/logout`
+- Return JSON only - validate `req.method` and token before proceeding
 
-### 6. Data Mock Pattern
-**All pages work with mock data immediately.** Replace with real API calls:
-```tsx
-// Current (mock):
-const mockCabinets = [{ id: 1, nom: "Cabinet A", ... }]
-
-// When integrating:
-const cabinets = await fetch('/api/cabinets').then(r => r.json())
-```
-
-Mock data locations: `data/patients_list.json`, `data/planning.ts`, `data/production.ts`, `AppContext.tsx`
+### 6. Authentication & Authorization
+- **JWT tokens** stored in `auth_token` cookie (httpOnly, secure in prod)
+- **Roles:** `admin` (all access) | `user` (cabinet-specific)
+- **Cabinet access control:** User can only view their assigned cabinet (via `JWT payload.cabinetId`)
+- Hook: `useAuth()` - provides `user`, `accessToken`, `isAuthenticated`, `refreshToken()`
+- Admin auth: `hashPassword()` + `validateToken()` from `lib/admin-auth.ts`
 
 ---
 
 ## Common Integration Points
 
-### Fetching Cabinet Data
+### 1. Fetching Cabinet Data
 ```tsx
-const [cabinets, setCabinets] = useState([])
 useEffect(() => {
   fetch('/api/cabinets')
     .then(r => r.json())
-    .then(data => setCabinets(data))
+    .then(data => setCabinets(data.cabinets || []))
+    .catch(err => console.error('Failed to fetch cabinets:', err))
 }, [])
 ```
 
-### Generating Reports
+### 2. Using AI Predictions in Components
 ```tsx
-import { generatePDF } from '@/lib/report-utils'
-
-const pdf = await generatePDF({
-  title: "Rapport Cabinet",
-  data: cabinetData,
-  fileName: "rapport_cabinet.pdf"
-})
+const { getPredictions } = useAI()
+const result = await getPredictions({ id: '1', nom: 'Cabinet A', caActuel: 50000, ... })
+// Returns: { caPredit, tauxConversion, patientsPrevus, riskFactors, confidence }
 ```
 
-### Using AI Predictions in Components
+### 3. Accessing Global State
 ```tsx
-const { predictions, loading } = useAI(cabinetData)
-// Returns: { revenue_prediction, patient_growth, recommendations }
+// In any "use client" component:
+const { patients, loading, isServerOnline, refreshData } = useAppContext()
+// patients: Patient[] (from MongoDB or defaultPatients fallback)
+// isServerOnline: boolean (true if MongoDB connected)
 ```
 
-### Authentication
-- Hook: [hooks/use-auth.ts](hooks/use-auth.ts)
-- Uses JWT tokens, role-based access (admin/user)
-- Cabinet access control: `canAccessCabinet(cabinetId)`
+### 4. Admin Authentication Pattern
+```tsx
+// In protected admin routes:
+import { useAdminAuth } from '@/hooks/use-admin-auth'
+const { user, loading } = useAdminAuth()
+if (!user) return <Redirect to="/admin/login" />
+```
 
 ---
 
@@ -187,13 +227,18 @@ const { predictions, loading } = useAI(cabinetData)
 ## Type System
 Main types in [lib/types.ts](lib/types.ts):
 ```typescript
-interface Cabinet { id, nom, caActuel, caObjectif, ... }
-interface Patient { id, name, dateRDV, time, type, status, ... }
-interface Report { id, cabinetId, period, generatedAt, ... }
-interface KPI { cabinet_id, revenue, patient_count, conversion_rate, ... }
+interface Cabinet {
+  id: number; nom: string; objectifs: { chiffreAffaires, nombreRendezVous, tauxAbsence }
+}
+interface DonneesCabinet {
+  cabinetId, periode, chiffreAffaires, nombreRendezVous, nombreAbsences, traitements
+}
+interface AnalysePerformance {
+  cabinetId, scoreGlobal, metriques, analyse, recommandations
+}
 ```
 
-Use these when creating API responses and component props.
+Use these when creating API responses and component props - TypeScript ensures type safety across API boundaries.
 
 ---
 
@@ -203,14 +248,13 @@ Use these when creating API responses and component props.
 [context/AppContext.tsx](context/AppContext.tsx) has a health check that sets `isServerOnline` state.
 
 ### Mock Data Fallback
-If Flask server is offline, app uses default patient data from `defaultPatients` array.
+If MongoDB is unavailable, app uses default patient data from `defaultPatients` array in AppContext.
 
-### Test Files
-- `test-seed.ts` - MongoDB seed data
-- `test-openai-key.js` - Verify OpenAI API key
-- `seed_patients.py` - Python seed script
-
-Run: `npm run dev`, navigate to test endpoints to verify integration.
+### Verify Environment
+```bash
+npm run test:admin              # Verify admin auth works
+node -e "console.log(process.env.MONGODB_URI)" # Check MongoDB URI loaded
+```
 
 ---
 
@@ -240,3 +284,19 @@ Run: `npm run dev`, navigate to test endpoints to verify integration.
 - [PROJECT_ANALYSIS_REPORT.md](PROJECT_ANALYSIS_REPORT.md) - Complete architecture breakdown
 - [MODIFICATIONS_2026.md](MODIFICATIONS_2026.md) - January 2026 update details
 - [README_ANALYTICS.md](README_ANALYTICS.md) - Full feature documentation
+
+---
+
+## Critical Patterns to Avoid
+
+❌ **Don't:** Store duplicate state in both Context and component state  
+✅ **Do:** Fetch data once and cache in state, use Context for app-wide shared data
+
+❌ **Don't:** Create new MongoDB connections in every route handler  
+✅ **Do:** Use `initializeApp()` from `lib/db.ts` with connection pooling
+
+❌ **Don't:** Call OpenAI directly in components  
+✅ **Do:** Use `useAI()` hook which wraps API routes that call OpenAI service
+
+❌ **Don't:** Expose secrets in `NEXT_PUBLIC_*` env vars  
+✅ **Do:** Keep secrets on server, expose only safe data to client
