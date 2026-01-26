@@ -1,77 +1,259 @@
-import io
-from flask import Flask, jsonify, request, send_file
-from flask_cors import CORS
-from datetime import datetime
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+"use client"
 
-app = Flask(__name__)
+import React, { useState, useEffect } from "react"
+import { Users, TrendingUp, Calendar, RefreshCw, AlertCircle, Mail, BarChart3 } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Sidebar } from "@/components/sidebar"
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
-# Configuration CORS : Autorise Next.js (port 3000) à appeler Flask (port 5001)
-CORS(app, resources={r"/api/*": {
-    "origins": ["http://localhost:3000"],
-    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    "allow_headers": ["Content-Type"]
-}})
+export default function Dashboard() {
+  const [mongoData, setMongoData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-# --- DONNÉES SIMULÉES ---
-patients_db = []
-for i in range(1, 57):
-    m = "10" if i <= 20 else "11" if i <= 45 else "12"
-    heure = "09:00" if i % 3 == 0 else "14:30" if i % 2 == 0 else "11:15"
-    patients_db.append({
-        "id": str(i), 
-        "name": f"PATIENT {i}",
-        "dateRDV": f"2025-{m}-10", 
-        "time": heure,
-        "status": "PRESENT" if i % 2 == 0 else "ATTENTE",
-        "type": "CONTRÔLE"
-    })
+  const loadStats = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+      setMongoData(data);
+    } catch (err) {
+      console.error("Erreur chargement:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-# --- ROUTE : LISTE DES PATIENTS (Correction de la 404) ---
-@app.route('/api/get-patients', methods=['GET'])
-def get_patients():
-    return jsonify({
-        "success": True, 
-        "patients": patients_db
-    }), 200
+  useEffect(() => {
+    loadStats();
+    const interval = setInterval(loadStats, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
-# --- ROUTE : CHATBOT IA ---
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    try:
-        data = request.json
-        user_query = data.get("message", "").lower()
-        total = len(patients_db)
+  // Données pour les graphiques
+  const cabinetData = mongoData?.cabinets || [];
+  const mobileChartData = cabinetData.slice(0, 5).map((c: any) => ({
+    name: c.nom.split(' ')[0],
+    ca: c.caActuel || 0,
+  }));
+
+  const scoreData = cabinetData.map((c: any) => ({
+    name: c.nom.split(' ')[0],
+    score: c.score || 0,
+  }));
+
+  const pieData = [
+    { name: 'Bon', value: cabinetData.filter((c: any) => c.score >= 85).length, fill: '#10b981' },
+    { name: 'Moyen', value: cabinetData.filter((c: any) => c.score >= 75 && c.score < 85).length, fill: '#f59e0b' },
+    { name: 'Faible', value: cabinetData.filter((c: any) => c.score < 75).length, fill: '#ef4444' },
+  ];
+
+  const today = new Date();
+  const monthName = today.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex">
+      <Sidebar />
+      <main className="flex-1 p-8 space-y-8">
         
-        if "ca" in user_query or "chiffre" in user_query:
-            res = f"Le chiffre d'affaires est de {total * 60} € pour {total} patients."
-        elif "patient" in user_query:
-            res = f"Il y a actuellement {total} patients dans la base."
-        else:
-            res = "Je suis l'assistant Efficience. Comment puis-je vous aider ?"
-            
-        return jsonify({"response": res})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        {/* HEADER avec salutation */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-black text-slate-900">Bonjour Younis 👋</h1>
+            <p className="text-slate-600 mt-2">Date/Période : Données mises à jour du : 01/01/2026 (Mois d'analyse : Décembre 2025)</p>
+          </div>
+          <button 
+            onClick={loadStats}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+          >
+            <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+            Actualiser
+          </button>
+        </div>
 
-# --- ROUTE : EXPORT PDF ---
-@app.route('/api/export-chat-pdf', methods=['POST'])
-def export_pdf():
-    try:
-        messages = request.json.get("messages", [])
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
-        p.drawString(100, 750, "Rapport d'Activité Efficience")
-        y = 700
-        for m in messages:
-            p.drawString(100, y, f"{m['role'].upper()}: {m['content'][:80]}")
-            y -= 20
-        p.save()
-        buffer.seek(0)
-        return send_file(buffer, as_attachment=True, download_name="Rapport.pdf", mimetype='application/pdf')
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        {/* SYNTHÈSE GLOBALE */}
+        <Card className="bg-white rounded-3xl border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-2xl font-black text-slate-900">Synthèse Globale</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <SynthesisCard 
+                icon={<BarChart3 className="text-blue-500" size={24} />}
+                title="Cabinets Suivis"
+                value={mongoData?.cabinets?.length || 0}
+                trend="+2 ce mois"
+                bgColor="bg-blue-50"
+              />
+              <SynthesisCard 
+                icon={<Mail className="text-purple-500" size={24} />}
+                title="Rapports Générés"
+                value={mongoData?.cabinets?.filter((c: any) => c.rapportStatut === 'sent').length || 0}
+                trend="ce mois"
+                bgColor="bg-purple-50"
+              />
+              <SynthesisCard 
+                icon={<Mail className="text-green-500" size={24} />}
+                title="Emails Envoyés"
+                value={mongoData?.cabinets?.length * 3 || 0}
+                trend="taux ~98%"
+                bgColor="bg-green-50"
+              />
+              <SynthesisCard 
+                icon={<TrendingUp className="text-red-500" size={24} />}
+                title="Performance Moyenne"
+                value="87%"
+                trend="+5% vs mois dernier"
+                bgColor="bg-red-50"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+        {/* GRAPHIQUES */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* CA Moyen par Cabinet */}
+          <Card className="bg-white rounded-3xl border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold text-slate-900">CA Moyen par cabinet</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={mobileChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="ca" stroke="#3b82f6" strokeWidth={2} name="CA (€)" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Répartition des Scores */}
+          <Card className="bg-white rounded-3xl border-0 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold text-slate-900">Répartition des Scores</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={80}
+                    outerRadius={110}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {pieData.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ALERTES & NOTIFICATIONS */}
+        <Card className="bg-white rounded-3xl border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-bold text-slate-900">Alertes & Notifications</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <AlertBox 
+                title="CA < Objectif"
+                count={mongoData?.cabinets?.filter((c: any) => c.caActuel < c.caObjectif).length || 0}
+                trend="+2 vs mois dernier"
+                bgColor="bg-red-50"
+                textColor="text-red-600"
+                icon="⚠️"
+              />
+              <AlertBox 
+                title="Absences élevées"
+                count={2}
+                trend="+2 vs mois dernier"
+                bgColor="bg-orange-50"
+                textColor="text-orange-600"
+                icon="👁️"
+              />
+              <AlertBox 
+                title="Rapports non envoyés"
+                count={mongoData?.cabinets?.filter((c: any) => c.rapportStatut !== 'sent').length || 0}
+                trend="+2 vs mois dernier"
+                bgColor="bg-pink-50"
+                textColor="text-pink-600"
+                icon="📧"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* KPI CARDS en bas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <KPICard 
+            title="Total Patients" 
+            value={mongoData?.nouveauxPatients || 0} 
+            icon={<Users />} 
+            color="bg-blue-600" 
+          />
+          <KPICard 
+            title="CA Total" 
+            value={`${(mongoData?.caActuel || 0).toLocaleString()} €`} 
+            icon={<TrendingUp />} 
+            color="bg-emerald-500" 
+          />
+          <KPICard 
+            title="Objectif Total" 
+            value={`${(mongoData?.caObjectif || 0).toLocaleString()} €`} 
+            icon={<Calendar />} 
+            color="bg-violet-500" 
+          />
+        </div>
+
+      </main>
+    </div>
+  )
+}
+
+function KPICard({ title, value, icon, color }: any) {
+  return (
+    <Card className="p-6 rounded-[2rem] border-none shadow-sm bg-white flex items-center gap-6">
+      <div className={`p-4 rounded-2xl text-white ${color}`}>{icon}</div>
+      <div>
+        <p className="text-[9px] font-black text-slate-400 uppercase">{title}</p>
+        <p className="text-2xl font-black text-slate-900">{value}</p>
+      </div>
+    </Card>
+  )
+}
+
+function SynthesisCard({ icon, title, value, trend, bgColor }: any) {
+  return (
+    <div className={`${bgColor} p-6 rounded-2xl border-0`}>
+      <div className="flex items-center gap-3 mb-3">
+        {icon}
+        <span className="text-sm font-semibold text-slate-700">{title}</span>
+      </div>
+      <p className="text-3xl font-black text-slate-900 mb-1">{value}</p>
+      <p className="text-xs text-slate-600">{trend}</p>
+    </div>
+  )
+}
+
+function AlertBox({ title, count, trend, bgColor, textColor, icon }: any) {
+  return (
+    <div className={`${bgColor} p-6 rounded-2xl border-l-4 border-red-500`}>
+      <div className="flex items-start justify-between mb-3">
+        <h3 className={`font-bold ${textColor}`}>{title} {icon}</h3>
+      </div>
+      <p className="text-3xl font-black text-slate-900 mb-1">{count}</p>
+      <p className="text-xs text-slate-600">{trend}</p>
+    </div>
+  )
+}
