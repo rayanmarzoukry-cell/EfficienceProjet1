@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initializeApp } from '@/lib/db'
+import mongoose from 'mongoose'
 
 /**
  * Webhook pour N8N
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
 
 async function importPatients(db: any, cabinetId: string, data: any[], timestamp: Date) {
   try {
-    const collection = db.collection('patients')
+    const collection = mongoose.connection.collection('patients')
     
     // Valider les données
     const validData = data.map(patient => ({
@@ -136,7 +137,7 @@ async function importPatients(db: any, cabinetId: string, data: any[], timestamp
 
 async function importFinances(db: any, cabinetId: string, data: any[], timestamp: Date) {
   try {
-    const collection = db.collection('donnees_cabinet')
+    const collection = mongoose.connection.collection('donnees_cabinet')
     
     const validData = data.map(finance => ({
       cabinetId: cabinetId || finance.cabinetId,
@@ -169,7 +170,7 @@ async function importFinances(db: any, cabinetId: string, data: any[], timestamp
 
 async function importProduction(db: any, cabinetId: string, data: any[], timestamp: Date) {
   try {
-    const collection = db.collection('production')
+    const collection = mongoose.connection.collection('production')
     
     const validData = data.map(prod => ({
       cabinetId: cabinetId || prod.cabinetId,
@@ -201,7 +202,7 @@ async function importProduction(db: any, cabinetId: string, data: any[], timesta
 
 async function importAppointments(db: any, cabinetId: string, data: any[], timestamp: Date) {
   try {
-    const collection = db.collection('rendezvous')
+    const collection = mongoose.connection.collection('rendezvous')
     
     const validData = data.map(appt => ({
       cabinetId: cabinetId || appt.cabinetId,
@@ -239,7 +240,7 @@ async function importAppointments(db: any, cabinetId: string, data: any[], times
 
 async function logWebhookAction(db: any, logData: any) {
   try {
-    const collection = db.collection('webhook_logs')
+    const collection = mongoose.connection.collection('webhook_logs')
     await collection.insertOne({
       ...logData,
       timestamp: new Date()

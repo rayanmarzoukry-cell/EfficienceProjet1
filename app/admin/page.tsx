@@ -4,11 +4,12 @@ import { useState, useEffect } from "react"
 import ProtectedLayout from "@/components/layout/protected-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Upload, BarChart3, Users, FileText, CheckCircle2, History, Settings } from "lucide-react"
+import { Upload, BarChart3, Users, FileText, CheckCircle2, History, Settings, Activity } from "lucide-react"
 import AdminImport from "@/components/admin/admin-import"
 import AuditLog from "@/components/admin/audit-log"
 import AdminAnalytics from "@/components/admin/admin-analytics"
 import N8nSyncButton from "@/components/admin/n8n-sync-button"
+import RecentImportsDisplay from "@/components/admin/recent-imports-display"
 
 interface AdminStats {
   totalCabinets: number
@@ -71,7 +72,7 @@ export default function AdminPage() {
 
         {/* Tabs Navigation */}
         <div className="w-full">
-          <div className="grid w-full grid-cols-4 border-b border-slate-200 bg-transparent p-0">
+          <div className="grid w-full grid-cols-5 border-b border-slate-200 bg-transparent p-0">
             <button
               onClick={() => setActiveTab("overview")}
               className={`border-b-2 rounded-none px-4 py-2 flex items-center gap-2 transition-colors ${
@@ -93,6 +94,17 @@ export default function AdminPage() {
             >
               <Upload className="w-4 h-4" />
               Importation
+            </button>
+            <button
+              onClick={() => setActiveTab("recent")}
+              className={`border-b-2 rounded-none px-4 py-2 flex items-center gap-2 transition-colors ${
+                activeTab === "recent"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              Imports en Temps Réel
             </button>
             <button
               onClick={() => setActiveTab("audit")}
@@ -317,6 +329,13 @@ export default function AdminPage() {
           {activeTab === "import" && (
             <div className="mt-8">
             <AdminImport />
+            </div>
+          )}
+
+          {/* RECENT IMPORTS TAB */}
+          {activeTab === "recent" && (
+            <div className="mt-8">
+            <RecentImportsDisplay />
             </div>
           )}
 
