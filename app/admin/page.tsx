@@ -209,7 +209,7 @@ export default function AdminPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Button
                       onClick={() => setActiveTab("import")}
-                      className="bg-blue-600 hover:bg-blue-700 text-white h-24 flex flex-col items-center justify-center gap-2"
+                      className="bg-blue-600 hover:bg-blue-700 text-white h-24 flex flex-col items-center justify-center gap-2 opacity-100"
                     >
                       <Upload className="w-6 h-6" />
                       <span className="text-center">
@@ -220,7 +220,7 @@ export default function AdminPage() {
                     <Button
                       onClick={() => setActiveTab("audit")}
                       variant="outline"
-                      className="border-slate-200 h-24 flex flex-col items-center justify-center gap-2"
+                      className="border-slate-200 h-24 flex flex-col items-center justify-center gap-2 opacity-100"
                     >
                       <History className="w-6 h-6" />
                       <span className="text-center">
@@ -231,7 +231,7 @@ export default function AdminPage() {
                     <Button
                       onClick={() => setActiveTab("analytics")}
                       variant="outline"
-                      className="border-slate-200 h-24 flex flex-col items-center justify-center gap-2"
+                      className="border-slate-200 h-24 flex flex-col items-center justify-center gap-2 opacity-100"
                     >
                       <BarChart3 className="w-6 h-6" />
                       <span className="text-center">
