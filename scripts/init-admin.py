@@ -24,9 +24,9 @@ def init_admin():
     # Demander les détails admin
     print("Veuillez entrer les détails de l'administrateur:")
     
-    admin_email = input("Email (admin@efficience-dentaire.fr): ").strip()
+    admin_email = input("Email (adminmrrobert@efficience.fr): ").strip()
     if not admin_email:
-        admin_email = "admin@efficience-dentaire.fr"
+        admin_email = "adminmrrobert@efficience.fr"
     
     admin_name = input("Nom (Admin Efficience): ").strip()
     if not admin_name:
