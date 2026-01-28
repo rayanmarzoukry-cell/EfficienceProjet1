@@ -37,7 +37,6 @@ export default function AdminSidebar() {
             <Shield className="text-white w-6 h-6" />
           </div>
           <div className="flex flex-col">
-            <span className="text-white text-lg font-black italic uppercase tracking-tighter leading-none">ADMIN</span>
             <div className="flex items-center gap-1.5 mt-1">
               <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Connecté</span>
