@@ -124,29 +124,29 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <a
                 href="/admin/users"
-                className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl hover:border-blue-400 hover:shadow-md transition group"
+                className="p-5 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl hover:border-blue-400 hover:shadow-md transition group opacity-100 block"
               >
                 <Users className="text-blue-600 mb-3 group-hover:scale-110 transition" size={28} />
-                <h4 className="font-black text-slate-900 text-lg">Gestion Utilisateurs</h4>
-                <p className="text-sm text-slate-600 mt-1">Créer, modifier, supprimer des accès</p>
+                <h4 className="font-black text-slate-900 text-lg block">Gestion Utilisateurs</h4>
+                <p className="text-sm text-slate-600 mt-1 block">Créer, modifier, supprimer des accès</p>
               </a>
 
               <a
                 href="/admin/cabinets"
-                className="p-5 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-xl hover:border-green-400 hover:shadow-md transition group"
+                className="p-5 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-xl hover:border-green-400 hover:shadow-md transition group opacity-100 block"
               >
                 <Building2 className="text-green-600 mb-3 group-hover:scale-110 transition" size={28} />
-                <h4 className="font-black text-slate-900 text-lg">Gestion Cabinets</h4>
-                <p className="text-sm text-slate-600 mt-1">Ajouter et configurer cabinets</p>
+                <h4 className="font-black text-slate-900 text-lg block">Gestion Cabinets</h4>
+                <p className="text-sm text-slate-600 mt-1 block">Ajouter et configurer cabinets</p>
               </a>
 
               <a
                 href="/admin/import"
-                className="p-5 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-xl hover:border-purple-400 hover:shadow-md transition group"
+                className="p-5 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-xl hover:border-purple-400 hover:shadow-md transition group opacity-100 block"
               >
                 <FileUp className="text-purple-600 mb-3 group-hover:scale-110 transition" size={28} />
-                <h4 className="font-black text-slate-900 text-lg">Import Fichiers</h4>
-                <p className="text-sm text-slate-600 mt-1">Importer données + intégration N8N</p>
+                <h4 className="font-black text-slate-900 text-lg block">Import Fichiers</h4>
+                <p className="text-sm text-slate-600 mt-1 block">Importer données + intégration N8N</p>
               </a>
             </div>
           </CardContent>
